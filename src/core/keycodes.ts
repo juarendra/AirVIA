@@ -21,10 +21,8 @@ export enum KeycodeType {
 export function classifyKeycode(code: number): KeycodeType {
   if (code === 0x0000) return KeycodeType.None;
   if (code === 0x0001) return KeycodeType.Transparent;
-  if (code >= 0x0004 && code <= 0x00FF) {
-    if (code >= 0xE0 && code <= 0xE7) return KeycodeType.Modifier;
-    return KeycodeType.Basic;
-  }
+  if (code >= 0x00E0 && code <= 0x00E7) return KeycodeType.Modifier;
+  if (code >= 0x0004 && code <= 0x00DF) return KeycodeType.Basic;
   if (code >= 0x0100 && code < 0x2000) return KeycodeType.Modifier;
   if ((code & 0xFF00) === 0x5200) return KeycodeType.Layer;
   if (code === 0x7C00) return KeycodeType.Boot;
@@ -242,6 +240,11 @@ if (import.meta.vitest) {
 
     it('classifies QK_BOOT as Boot', () => {
       expect(classifyKeycode(0x7C00)).toBe(KeycodeType.Boot);
+    });
+
+    it('classifies reserved range 0xE8-0xFF as Unsupported', () => {
+      expect(classifyKeycode(0x00E8)).toBe(KeycodeType.Unsupported);
+      expect(classifyKeycode(0x00FF)).toBe(KeycodeType.Unsupported);
     });
 
     it('classifies unknown as Unsupported', () => {
