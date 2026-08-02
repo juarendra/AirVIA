@@ -1,0 +1,14 @@
+{
+  "name": "VIA Standard 2x2",
+  "vendorId": "0xFEED",
+  "productId": "0x0001",
+  "matrix": { "rows": 2, "cols": 2 },
+  "layouts": {
+    "keymap": [
+      {"x": 3, "y": 0, "matrix": [0, 0]},
+      {"x": 8, "y": 0, "matrix": [0, 1]},
+      {"x": 0, "y": 2, "w": 1.5, "matrix": [1, 0]},
+      {"x": 2, "y": 2, "w": 2.75, "matrix": [1, 1]}
+    ]
+  }
+}

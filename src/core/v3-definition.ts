@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 
-export type V3KeyPosition = { x: number; y: number; w?: number; h?: number; r?: number; rx?: number; ry?: number };
+export type V3KeyPosition = { x: number; y: number; w?: number; h?: number; r?: number; rx?: number; ry?: number; row: number; col: number };
 
 export type V3Layout = { keymap: V3KeyPosition[]; labels?: (string | string[])[] };
 
@@ -51,10 +51,10 @@ export function parseV3Definition(json: string): V3Definition {
     Array.isArray(l.keymap) && l.keymap.length > 0,
     'layouts.keymap must be non-empty array',
   );
-  assert(
-    l.keymap.length === m.rows * m.cols,
-    `layouts.keymap length ${l.keymap.length} != matrix rows*cols (${m.rows * m.cols})`,
-  );
+
+  const rows = m.rows as number;
+  const cols = m.cols as number;
+  const seen = new Set<number>();
 
   for (let i = 0; i < l.keymap.length; i++) {
     const p = (l.keymap as unknown[])[i];
@@ -82,11 +82,36 @@ export function parseV3Definition(json: string): V3Definition {
       kp.ry === undefined || typeof kp.ry === 'number',
       `keymap[${i}].ry must be a number if present`,
     );
+
+    if (kp.matrix !== undefined) {
+      assert(
+        Array.isArray(kp.matrix) && kp.matrix.length === 2 &&
+        typeof kp.matrix[0] === 'number' && Number.isInteger(kp.matrix[0]) &&
+        typeof kp.matrix[1] === 'number' && Number.isInteger(kp.matrix[1]),
+        `keymap[${i}].matrix must be [row, col]`,
+      );
+      const mRow = kp.matrix[0] as number;
+      const mCol = kp.matrix[1] as number;
+      assert(mRow >= 0 && mRow < rows, `keymap[${i}].matrix row ${mRow} out of bounds [0, ${rows - 1}]`);
+      assert(mCol >= 0 && mCol < cols, `keymap[${i}].matrix col ${mCol} out of bounds [0, ${cols - 1}]`);
+    }
   }
 
-  const keymap = (l.keymap as unknown[]).map((p) => {
+  const keymap = (l.keymap as unknown[]).map((p, i) => {
     const kp = p as Record<string, unknown>;
-    const entry: V3KeyPosition = { x: kp.x as number, y: kp.y as number };
+    let row: number;
+    let col: number;
+    if (kp.matrix !== undefined) {
+      row = (kp.matrix as number[])[0];
+      col = (kp.matrix as number[])[1];
+    } else {
+      row = Math.floor(i / cols);
+      col = i % cols;
+    }
+    const key = row * cols + col;
+    assert(!seen.has(key), `Duplicate matrix coordinate [${row},${col}] at keymap index ${i}`);
+    seen.add(key);
+    const entry: V3KeyPosition = { x: kp.x as number, y: kp.y as number, row, col };
     if (typeof kp.w === 'number') entry.w = kp.w;
     if (typeof kp.h === 'number') entry.h = kp.h;
     if (typeof kp.r === 'number') entry.r = kp.r;
@@ -171,7 +196,7 @@ if (import.meta.vitest) {
       expect(def.matrix.rows).toBe(2);
       expect(def.matrix.cols).toBe(3);
       expect(def.layouts.keymap.length).toBe(6);
-      expect(def.layouts.keymap[0]).toEqual({ x: 0, y: 0 });
+      expect(def.layouts.keymap[0]).toEqual({ x: 0, y: 0, row: 0, col: 0 });
       expect(def.encoders).toBeUndefined();
     });
 
@@ -191,8 +216,8 @@ if (import.meta.vitest) {
           ],
         },
       }));
-      expect(def.layouts.keymap[0]).toEqual({ x: 0, y: 0, w: 2, h: 1 });
-      expect(def.layouts.keymap[1]).toEqual({ x: 2, y: 0, r: 90, rx: 1, ry: 0 });
+      expect(def.layouts.keymap[0]).toEqual({ x: 0, y: 0, w: 2, h: 1, row: 0, col: 0 });
+      expect(def.layouts.keymap[1]).toEqual({ x: 2, y: 0, r: 90, rx: 1, ry: 0, row: 0, col: 1 });
     });
 
     it('parses labels string array', () => {
@@ -229,12 +254,69 @@ if (import.meta.vitest) {
       expect(() => parseV3Definition('{not json}')).toThrow(V3ParseError);
     });
 
-    it('rejects wrong keymap length', () => {
+    it('parses keys with explicit matrix coordinates', () => {
+      const def = parseV3Definition(validJson({
+        layouts: {
+          keymap: [
+            { x: 3, y: 0, matrix: [0, 0] },
+            { x: 8, y: 0, matrix: [0, 1] },
+            { x: 0, y: 2, w: 1.5, matrix: [1, 0] },
+            { x: 2, y: 2, w: 2.75, matrix: [1, 1] },
+          ],
+        },
+      }));
+      expect(def.layouts.keymap.length).toBe(4);
+      expect(def.layouts.keymap[0]).toEqual({ x: 3, y: 0, row: 0, col: 0 });
+      expect(def.layouts.keymap[1]).toEqual({ x: 8, y: 0, row: 0, col: 1 });
+      expect(def.layouts.keymap[2]).toEqual({ x: 0, y: 2, w: 1.5, row: 1, col: 0 });
+      expect(def.layouts.keymap[3]).toEqual({ x: 2, y: 2, w: 2.75, row: 1, col: 1 });
+    });
+
+    it('parses sparse keymap with fewer keys than matrix size', () => {
+      const def = parseV3Definition(validJson({
+        matrix: { rows: 3, cols: 4 },
+        layouts: {
+          keymap: [
+            { x: 0, y: 0, matrix: [0, 0] },
+            { x: 1, y: 0, matrix: [0, 2] },
+            { x: 0, y: 1, matrix: [2, 1] },
+          ],
+        },
+      }));
+      expect(def.layouts.keymap.length).toBe(3);
+      expect(def.layouts.keymap[0]).toEqual({ x: 0, y: 0, row: 0, col: 0 });
+      expect(def.layouts.keymap[1]).toEqual({ x: 1, y: 0, row: 0, col: 2 });
+      expect(def.layouts.keymap[2]).toEqual({ x: 0, y: 1, row: 2, col: 1 });
+    });
+
+    it('rejects out-of-bounds matrix row', () => {
       expect(() => parseV3Definition(validJson({
         layouts: {
-          keymap: [{ x: 0, y: 0 }, { x: 1, y: 0 }],
+          keymap: [
+            { x: 0, y: 0, matrix: [2, 0] },
+            { x: 1, y: 0, matrix: [0, 1] },
+            { x: 2, y: 0, matrix: [0, 2] },
+            { x: 0, y: 1, matrix: [1, 0] },
+            { x: 1, y: 1, matrix: [1, 1] },
+            { x: 2, y: 1, matrix: [1, 2] },
+          ],
         },
-      }))).toThrow('layouts.keymap length');
+      }))).toThrow('out of bounds');
+    });
+
+    it('rejects duplicate matrix coordinates', () => {
+      expect(() => parseV3Definition(validJson({
+        layouts: {
+          keymap: [
+            { x: 0, y: 0, matrix: [0, 0] },
+            { x: 1, y: 0, matrix: [0, 1] },
+            { x: 2, y: 0, matrix: [0, 0] },
+            { x: 0, y: 1, matrix: [1, 0] },
+            { x: 1, y: 1, matrix: [1, 1] },
+            { x: 2, y: 1, matrix: [1, 2] },
+          ],
+        },
+      }))).toThrow('Duplicate matrix coordinate');
     });
 
     it('rejects oversized matrix rows', () => {

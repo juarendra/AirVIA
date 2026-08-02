@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getEncoderCount, getEncoderMap, getEncoderKeycode, setEncoderKeycode, getActiveLayer } from '../../store/app.svelte';
+  import { getEncoderCount, getEncoderMap, getEncoderKeycode, setEncoderKeycode, getActiveLayer, markDirty } from '../../store/app.svelte';
   import { KEYCODES_BY_CATEGORY, CATEGORY_LABELS, keycodeLabel, type KeycodeEntry, type KeycodeCategory } from '../../core/keycodes';
   import { Protocol } from '../../core/protocol';
   import { sendPacket } from '../../ble/dispatch';
@@ -35,7 +35,9 @@
   function selectKeycode(code: number) {
     if (!editing) return;
     setEncoderKeycode(activeLayer, editing.enc, editing.cw, code);
-    sendPacket(Protocol.setEncoderKeycode(activeLayer, editing.enc, editing.cw ? 1 : 0, code >> 8, code & 0xFF));
+    markDirty();
+    sendPacket(Protocol.setEncoderKeycode(activeLayer, editing.enc, editing.cw ? 1 : 0, code >> 8, code & 0xFF))
+      .catch(err => console.error('send failed', err));
     editing = null;
   }
 

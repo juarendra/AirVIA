@@ -10,6 +10,7 @@
 <div class="bg-white border-b border-slate-100 px-3 py-1.5 flex items-center gap-1">
   {#each layers as layer (layer)}
     <button
+      aria-pressed={active === layer}
       onclick={() => setActiveLayer(layer)}
       class="rounded-full px-3 py-1 text-xs font-medium transition-colors
              {active === layer

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getLayoutOptions, setLayoutOptions } from '../../store/app.svelte';
+  import { getLayoutOptions, setLayoutOptions, markDirty } from '../../store/app.svelte';
   import { Protocol } from '../../core/protocol';
   import { sendPacket } from '../../ble/dispatch';
 
@@ -9,7 +9,8 @@
   function toggle(bit: number) {
     const next = options ^ (1 << bit);
     setLayoutOptions(next);
-    sendPacket(Protocol.setLayoutOptions(next));
+    markDirty();
+    sendPacket(Protocol.setLayoutOptions(next)).catch(() => {});
   }
 </script>
 

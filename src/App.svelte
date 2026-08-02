@@ -9,7 +9,10 @@
   import LightingPanel from './ui/lighting/LightingPanel.svelte';
   import LayoutOptions from './ui/layout/LayoutOptions.svelte';
   import PacketLog from './ui/console/PacketLog.svelte';
+  import DeviceActions from './ui/device/DeviceActions.svelte';
   import Toast from './ui/shared/Toast.svelte';
+  import BrowserCheck from './ui/shared/BrowserCheck.svelte';
+  import { toast } from './ui/shared/Toast.svelte';
 
   import { BLETransport } from './ble/transport';
   import { setTransport } from './ble/dispatch';
@@ -44,6 +47,7 @@
     try {
       await transport.connect();
     } catch (err) {
+      toast('Connection failed', 'error');
       transport = null;
       return;
     }
@@ -61,8 +65,10 @@
 
     try {
       await synchronizeDevice();
+      toast('Synchronized', 'success');
     } catch (err) {
       console.error('Sync failed:', err);
+      toast('Sync failed', 'error');
       setSyncPhase('error');
       setSyncProgress('Sync failed — try reconnecting');
       return;
@@ -134,59 +140,63 @@
   const activeTab = $derived(getActiveTab());
 </script>
 
-<div
-  class="h-screen flex flex-col bg-slate-50 text-slate-700"
-  role="application"
-  ondrop={handleDrop}
-  ondragover={handleDragOver}
-  ondragleave={handleDragLeave}
->
-  <ConnectBar onConnect={handleConnect} onDisconnect={handleDisconnect} />
+<BrowserCheck>
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    class="h-screen flex flex-col bg-slate-50 text-slate-700"
+    ondrop={handleDrop}
+    ondragover={handleDragOver}
+    ondragleave={handleDragLeave}
+  >
+    <ConnectBar onConnect={handleConnect} onDisconnect={handleDisconnect} />
 
-  <TabBar />
+    <TabBar />
 
-  {#if activeTab === 'keymap' || activeTab === 'encoder'}
-    <LayerSelector />
-  {/if}
+    {#if activeTab === 'keymap' || activeTab === 'encoder'}
+      <LayerSelector />
+    {/if}
 
-  <div class="flex-1 min-h-0">
-    {#if activeTab === 'keymap'}
-      <KeymapGrid />
-    {:else if activeTab === 'encoder'}
-      <EncoderEditor />
-    {:else if activeTab === 'macros'}
-      <MacroEditor />
-    {:else if activeTab === 'lighting'}
-      <LightingPanel />
+    <div class="flex-1 min-h-0">
+      {#if activeTab === 'keymap'}
+        <KeymapGrid />
+      {:else if activeTab === 'encoder'}
+        <EncoderEditor />
+      {:else if activeTab === 'macros'}
+        <MacroEditor />
+      {:else if activeTab === 'lighting'}
+        <LightingPanel />
     {:else if activeTab === 'layout'}
       <LayoutOptions />
+    {:else if activeTab === 'actions'}
+      <DeviceActions />
     {:else if activeTab === 'console'}
-      <PacketLog />
-    {/if}
-  </div>
-
-  {#if dragOver}
-    <div class="fixed inset-0 bg-black/20 border-2 border-dashed border-blue-400 z-40 pointer-events-none flex items-center justify-center">
-      <span class="text-2xl text-blue-500 font-bold">Drop V3 definition JSON</span>
+        <PacketLog />
+      {/if}
     </div>
-  {/if}
 
-  <input
-    type="file"
-    accept=".json,application/json"
-    bind:this={fileInput}
-    onchange={handleFileChange}
-    class="hidden"
-  />
+    {#if dragOver}
+      <div class="fixed inset-0 bg-black/20 border-2 border-dashed border-blue-400 z-40 pointer-events-none flex items-center justify-center">
+        <span class="text-2xl text-blue-500 font-bold">Drop V3 definition JSON</span>
+      </div>
+    {/if}
 
-  <button
-    onclick={triggerFileInput}
-    class="fixed bottom-4 left-4 z-50 px-3 py-2 bg-white border border-dashed border-slate-300 rounded-xl text-sm text-slate-500 hover:text-slate-700 hover:border-slate-400 shadow-sm transition-colors"
-    title="Load V3 definition JSON"
-  >
-    Load definition JSON
-  </button>
+    <input
+      type="file"
+      accept=".json,application/json"
+      bind:this={fileInput}
+      onchange={handleFileChange}
+      class="hidden"
+    />
 
-  <Toast />
-  <KeycodePicker />
-</div>
+    <button
+      onclick={triggerFileInput}
+      class="fixed bottom-4 left-4 z-50 px-3 py-2 bg-white border border-dashed border-slate-300 rounded-xl text-sm text-slate-500 hover:text-slate-700 hover:border-slate-400 shadow-sm transition-colors"
+      title="Load V3 definition JSON"
+    >
+      Load definition JSON
+    </button>
+
+    <Toast />
+    <KeycodePicker />
+  </div>
+</BrowserCheck>

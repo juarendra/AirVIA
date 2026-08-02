@@ -1,6 +1,6 @@
 <script lang="ts">
   import Modal from '../shared/Modal.svelte';
-  import { getSelectedCell, setSelectedCell, setKeycodeAt } from '../../store/app.svelte';
+  import { getSelectedCell, setSelectedCell, setKeycodeAt, markDirty } from '../../store/app.svelte';
   import { KEYCODES_BY_CATEGORY, CATEGORY_LABELS, type KeycodeEntry, type KeycodeCategory } from '../../core/keycodes';
   import { Protocol } from '../../core/protocol';
   import { sendPacket } from '../../ble/dispatch';
@@ -31,7 +31,9 @@
     const cell = selectedCell;
     if (!cell) return;
     setKeycodeAt(cell.layer, cell.row, cell.col, entry.code);
-    sendPacket(Protocol.setKeycode(cell.layer, cell.row, cell.col, entry.code >> 8, entry.code & 0xFF));
+    markDirty();
+    sendPacket(Protocol.setKeycode(cell.layer, cell.row, cell.col, entry.code >> 8, entry.code & 0xFF))
+      .catch(err => console.error('send failed', err));
     setSelectedCell(null);
     search = '';
   }
@@ -76,7 +78,7 @@
         {/each}
       </div>
 
-      <div class="grid grid-cols-4 gap-1.5 max-h-[50vh] overflow-y-auto pr-1">
+      <div class="grid gap-1.5 max-h-[50vh] overflow-y-auto pr-1" style="grid-template-columns: repeat(auto-fill, minmax(80px, 1fr))">
         {#each categoryEntries as entry (entry.code)}
           <button
             onclick={() => select(entry)}
@@ -90,7 +92,7 @@
       </div>
     {:else}
       {#if filteredEntries.length > 0}
-        <div class="grid grid-cols-4 gap-1.5 max-h-[50vh] overflow-y-auto pr-1">
+        <div class="grid gap-1.5 max-h-[50vh] overflow-y-auto pr-1" style="grid-template-columns: repeat(auto-fill, minmax(80px, 1fr))">
           {#each filteredEntries as entry (entry.code)}
             <button
               onclick={() => select(entry)}

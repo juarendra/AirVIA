@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { getConnectionState, getSyncPhase, getSyncProgress, getDeviceName, setConnectionState } from '../store/app.svelte';
+  import { getConnectionState, getSyncPhase, getSyncProgress, getDeviceName, setConnectionState, getSaveState, markSaving, markSaved, markSaveFailed } from '../store/app.svelte';
   import type { TransportState } from '../ble/transport';
+  import { Protocol } from '../core/protocol';
+  import { sendViaCommand } from '../ble/dispatch';
   import Icon from './shared/Icon.svelte';
 
   let { onConnect, onDisconnect }: {
@@ -20,6 +22,18 @@
 
   function stateLabel(s: TransportState): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  const saveState = $derived(getSaveState());
+
+  async function handleSave() {
+    markSaving();
+    try {
+      await sendViaCommand(Protocol.saveCustomValue(0x02));
+      markSaved();
+    } catch {
+      markSaveFailed();
+    }
   }
 
   async function handleConnect() {
@@ -67,6 +81,23 @@
     {#if error}
       <span class="text-sm text-red-400 max-w-64 truncate" title={error}>{error}</span>
     {/if}
+
+    {#if saveState === 'dirty'}
+      <button onclick={handleSave}
+        class="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium shadow-sm hover:shadow-md hover:bg-blue-700 transition-all">
+        Save Changes
+      </button>
+    {:else if saveState === 'saving'}
+      <span class="text-sm text-slate-500">Saving...</span>
+    {:else if saveState === 'saved'}
+      <span class="text-sm text-green-500">&#10003; Saved</span>
+    {:else if saveState === 'failed'}
+      <button onclick={handleSave}
+        class="text-sm text-red-500 hover:underline">
+        Save failed &mdash; tap to retry
+      </button>
+    {/if}
+
     {#if state === 'disconnected' || state === 'error'}
       <button
         onclick={handleConnect}

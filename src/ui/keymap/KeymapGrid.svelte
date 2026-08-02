@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getDefinition, getActiveLayer, getSyncPhase, getSyncProgress } from '../../store/app.svelte';
+  import { getDefinition, getActiveLayer, getSyncPhase, getSyncProgress, getPendingChanges } from '../../store/app.svelte';
   import KeymapCell from './KeymapCell.svelte';
 
   const def = $derived(getDefinition());
@@ -28,7 +28,8 @@
 </script>
 
 {#if def}
-  <div class="p-4 overflow-auto relative">
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class="p-4 overflow-auto relative" style="max-height: calc(100vh - 200px)">
     {#if getSyncPhase() !== 'ready'}
       <div class="absolute inset-0 bg-white/60 flex items-center justify-center z-10 rounded-lg">
         <span class="text-slate-500 font-medium text-sm">
@@ -55,6 +56,11 @@
     <div class="text-xs text-slate-400 text-center mt-2">
       {def.name} &mdash; {def.matrix.rows}&times;{def.matrix.cols} matrix
     </div>
+    {#if getPendingChanges() > 0}
+      <div class="text-xs text-orange-500 text-center mt-1">
+        {getPendingChanges()} pending changes &mdash; Save to persist
+      </div>
+    {/if}
   </div>
 {:else}
   <div class="flex items-center justify-center h-64">

@@ -22,6 +22,8 @@ let speed = $state<number>(3);
 let hue = $state<number>(0);
 let saturation = $state<number>(255);
 
+export type SaveState = 'clean' | 'dirty' | 'saving' | 'saved' | 'failed';
+
 export type SyncPhase =
   | 'idle'
   | 'connecting'
@@ -42,6 +44,19 @@ let packetLog = $state<Array<{ dir: 'tx' | 'rx'; packet: RawPacket }>>([]);
 
 export function getDefinition(): V3Definition | null { return definition; }
 export function setDefinition(def: V3Definition | null) { definition = def; }
+
+let saveState = $state<SaveState>('clean');
+let pendingChanges = $state(0);
+
+export function getSaveState(): SaveState { return saveState; }
+export function getPendingChanges(): number { return pendingChanges; }
+export function markDirty() {
+  if (saveState !== 'saving') saveState = 'dirty';
+  pendingChanges++;
+}
+export function markSaving() { saveState = 'saving'; }
+export function markSaved() { saveState = 'saved'; pendingChanges = 0; setTimeout(() => { if (saveState === 'saved') saveState = 'clean'; }, 3000); }
+export function markSaveFailed() { saveState = 'failed'; }
 
 export function getConnectionState(): TransportState { return connectionState; }
 export function setConnectionState(s: TransportState) { connectionState = s; }

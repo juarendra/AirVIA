@@ -1,25 +1,25 @@
 import { type RawPacket } from '../core/protocol';
+import { type CommandRequest, isErrorResponse } from '../core/commands';
 
 export type QueueConfig = { retries: number; maxDepth: number };
 
 export class PacketQueue {
-  private pending: RawPacket[] = [];
-  private current: RawPacket | null = null;
+  private pending: CommandRequest[] = [];
+  private current: CommandRequest | null = null;
   private written = false;
   private retriesLeft = 0;
 
   constructor(private config: QueueConfig) {}
 
-  enqueue(packet: RawPacket): void {
-    if (this.pending.length >= this.config.maxDepth) {
+  enqueue(request: CommandRequest): void {
+    if (this.pending.length + (this.current ? 1 : 0) >= this.config.maxDepth) {
       throw new Error('Queue full');
     }
-    this.pending.push([...packet]);
+    this.pending.push(request);
   }
 
-  /** Returns head to send, or null. Only returns same packet on retry (after timeout). */
   takeForSend(): RawPacket | null {
-    if (this.current && !this.written) return this.current;
+    if (this.current && !this.written) return this.current.packet;
     if (this.current) return null;
 
     const next = this.pending.shift();
@@ -27,34 +27,45 @@ export class PacketQueue {
     this.current = next;
     this.written = false;
     this.retriesLeft = this.config.retries;
-    return this.current;
+    return this.current.packet;
   }
 
-  /** Mark current as sent (call after successful write). */
   markSent(): void {
     this.written = true;
   }
 
-  /** Clear current after successful response. */
-  resolve(): void {
+  handleResponse(response: RawPacket): boolean {
+    if (!this.current) return false;
+    if (!this.current.matches(response)) return false;
+
+    if (isErrorResponse(response)) {
+      this.current.reject(new Error(`VIA error: command 0x${this.current.packet[0]?.toString(16)} rejected`));
+    } else {
+      this.current.resolve(response);
+    }
     this.current = null;
     this.written = false;
+    return true;
   }
 
-  /** Retry: mark unsent again so takeForSend returns it. Returns null if exhausted. */
   retry(): RawPacket | null {
     if (!this.current) return null;
     this.retriesLeft--;
-    if (this.retriesLeft <= 0) {
+    if (this.retriesLeft < 0) {
+      const req = this.current;
       this.current = null;
       this.written = false;
+      req.reject(new Error('Retry exhausted'));
       return null;
     }
     this.written = false;
-    return this.current;
+    return this.current.packet;
   }
 
   clear(): void {
+    const current = this.current;
+    if (current) current.reject(new Error('Disconnected'));
+    for (const req of this.pending) req.reject(new Error('Disconnected'));
     this.pending = [];
     this.current = null;
     this.written = false;

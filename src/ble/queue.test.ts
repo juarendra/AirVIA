@@ -1,8 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import { PacketQueue, type QueueConfig } from './queue';
 import { type RawPacket } from '../core/protocol';
+import { type CommandRequest } from '../core/commands';
 
-const pkt = (...bytes: number[]): RawPacket => bytes;
+function cmd(c: number): CommandRequest {
+  const pkt = new Array(32).fill(0);
+  pkt[0] = c;
+  return {
+    packet: pkt,
+    matches: (r: RawPacket) => r.length > 0 && r[0] === c,
+    decode: (r: RawPacket) => r,
+    resolve: () => {},
+    reject: () => {},
+  };
+}
 
 function makeConfig(overrides: Partial<QueueConfig> = {}): QueueConfig {
   return { retries: 3, maxDepth: 10, ...overrides };
@@ -11,9 +22,9 @@ function makeConfig(overrides: Partial<QueueConfig> = {}): QueueConfig {
 describe('PacketQueue', () => {
   it('dequeues first enqueued packet', () => {
     const q = new PacketQueue(makeConfig());
-    q.enqueue(pkt(1));
-    q.enqueue(pkt(2));
-    expect(q.takeForSend()).toEqual(pkt(1));
+    q.enqueue(cmd(1));
+    q.enqueue(cmd(2));
+    expect(q.takeForSend()).toEqual(cmd(1).packet);
   });
 
   it('returns null when empty', () => {
@@ -23,51 +34,55 @@ describe('PacketQueue', () => {
 
   it('resolve advances to next', () => {
     const q = new PacketQueue(makeConfig());
-    q.enqueue(pkt(1));
-    q.enqueue(pkt(2));
-    expect(q.takeForSend()).toEqual(pkt(1));
-    q.resolve();
-    expect(q.takeForSend()).toEqual(pkt(2));
+    q.enqueue(cmd(1));
+    q.enqueue(cmd(2));
+    expect(q.takeForSend()).toEqual(cmd(1).packet);
+    q.handleResponse(new Array(32).fill(0).map((_, i) => (i === 0 ? 1 : 0)));
+    expect(q.takeForSend()).toEqual(cmd(2).packet);
   });
 
-  it('retry on timeout (3 timeouts exhaust and advance)', () => {
-    const q = new PacketQueue(makeConfig({ retries: 3 }));
-    q.enqueue(pkt(1));
-    q.enqueue(pkt(2));
+  it('retry on timeout', () => {
+    const q = new PacketQueue(makeConfig({ retries: 2 }));
+    q.enqueue(cmd(1));
+    q.enqueue(cmd(2));
 
-    expect(q.takeForSend()).toEqual(pkt(1));
+    q.takeForSend();
+    q.markSent();
 
-    q.retry();
-    expect(q.takeForSend()).toEqual(pkt(1)); // retry 1
+    expect(q.retry()).not.toBeNull();
+    expect(q.retry()).not.toBeNull();
+    expect(q.retry()).toBeNull();
 
-    q.retry();
-    expect(q.takeForSend()).toEqual(pkt(1)); // retry 2
-
-    q.retry(); // exhausted
-    expect(q.takeForSend()).toEqual(pkt(2));
+    expect(q.takeForSend()).toEqual(cmd(2).packet);
   });
 
-  it('stops after max retries (config retries=1, retry → advance)', () => {
-    const q = new PacketQueue(makeConfig({ retries: 1 }));
-    q.enqueue(pkt(1));
-    q.enqueue(pkt(2));
+  it('stops after max retries', () => {
+    let rejected = '';
+    const r = cmd(1);
+    r.reject = (e: Error) => { rejected = e.message; };
 
-    expect(q.takeForSend()).toEqual(pkt(1));
-    q.retry();
-    expect(q.takeForSend()).toEqual(pkt(2));
+    const q = new PacketQueue(makeConfig({ retries: 0 }));
+    q.enqueue(r);
+
+    q.takeForSend();
+    q.markSent();
+
+    expect(q.retry()).toBeNull();
+    expect(rejected).toContain('exhausted');
+    expect(q.takeForSend()).toBeNull();
   });
 
   it('rejects enqueue when full', () => {
     const q = new PacketQueue(makeConfig({ maxDepth: 2 }));
-    q.enqueue(pkt(1));
-    q.enqueue(pkt(2));
-    expect(() => q.enqueue(pkt(3))).toThrow('Queue full');
+    q.enqueue(cmd(1));
+    q.enqueue(cmd(2));
+    expect(() => q.enqueue(cmd(3))).toThrow('Queue full');
   });
 
   it('clear empties queue', () => {
     const q = new PacketQueue(makeConfig());
-    q.enqueue(pkt(1));
-    q.enqueue(pkt(2));
+    q.enqueue(cmd(1));
+    q.enqueue(cmd(2));
     q.takeForSend();
     q.clear();
     expect(q.pendingCount).toBe(0);

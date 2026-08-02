@@ -8,15 +8,19 @@
     { id: 'macros', label: 'MACROS', icon: 'terminal' },
     { id: 'lighting', label: 'LIGHTING', icon: 'sun' },
     { id: 'layout', label: 'LAYOUT', icon: 'drag' },
+    { id: 'actions', label: 'ACTIONS', icon: 'trash' },
     { id: 'console', label: 'CONSOLE', icon: 'terminal' },
   ];
 
   const active = $derived(getActiveTab());
 </script>
 
-<nav class="bg-slate-100 mx-4 my-2 rounded-full p-1 flex">
+<!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
+<nav role="tablist" class="bg-slate-100 mx-4 my-2 rounded-full p-1 flex overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden">
   {#each tabs as tab}
     <button
+      role="tab"
+      aria-selected={active === tab.id}
       onclick={() => setActiveTab(tab.id)}
       class="flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-medium transition-all
              {active === tab.id
