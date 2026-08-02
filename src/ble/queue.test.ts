@@ -9,7 +9,8 @@ function cmd(c: number): CommandRequest {
   return {
     packet: pkt,
     matches: (r: RawPacket) => r.length > 0 && r[0] === c,
-    decode: (r: RawPacket) => r,
+    // @ts-expect-error test helper: generic decode relaxed for test convenience
+    decode: (r: RawPacket): unknown => r,
     resolve: () => {},
     reject: () => {},
   };

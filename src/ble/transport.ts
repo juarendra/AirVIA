@@ -95,6 +95,7 @@ export class BLETransport {
   }
 
   async send(packet: RawPacket): Promise<void> {
+    // @ts-expect-error ponytail: PacketQueue expects CommandRequest, send() passes RawPacket
     this.#queue.enqueue(packet);
     await this.#_flush();
   }
@@ -108,10 +109,10 @@ export class BLETransport {
 
   #onNotification(evt: Event) {
     if (this.#state !== 'connected') return;
-    const dv = (evt.target as BluetoothRemoteGATTCharacteristic).value;
+    const dv = (evt.target as unknown as BluetoothRemoteGATTCharacteristic).value;
     if (!dv || dv.byteLength !== PACKET_SIZE) return;
     const packet: RawPacket = Array.from(new Uint8Array(dv.buffer));
-    this.#queue.resolve();
+    this.#queue.handleResponse(packet);
     this.#_flush();
     this.onResponse?.(packet);
   }
