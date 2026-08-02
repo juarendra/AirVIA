@@ -44,8 +44,8 @@ export class BLETransport {
       this.#device = device;
 
       device.addEventListener('gattserverdisconnected', () => {
-        this.#queue.clear();
         this.#clearTimeout();
+        this.#queue.clear();
         this.#server = null;
         this.#dataChar = null;
         this.#infoChar = null;
@@ -72,10 +72,19 @@ export class BLETransport {
     }
   }
 
-  disconnect(): void {
-    this.#queue.clear();
+  async #cleanup(): Promise<void> {
     this.#clearTimeout();
-    this.#server?.disconnect();
+    this.#queue.clear();
+    try { this.#device?.gatt?.disconnect(); } catch { /* already disconnected */ }
+    this.#device = null;
+    this.#server = null;
+    this.#dataChar = null;
+    this.#infoChar = null;
+  }
+
+  disconnect(): void {
+    this.#cleanup();
+    this.#setState('disconnected');
   }
 
   send(packet: RawPacket): void {

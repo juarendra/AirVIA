@@ -55,7 +55,12 @@
 
   async function handleConnect() {
     transport = new BLETransport();
-    transport.onStateChange = (s) => setConnectionState(s);
+    transport.onStateChange = (s) => {
+      setConnectionState(s);
+      if (s === 'disconnected') {
+        setTransport(null);
+      }
+    };
     transport.onResponse = handleResponse;
     await transport.connect();
     setTransport(transport);
