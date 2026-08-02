@@ -40,6 +40,7 @@ function bufferPacket(
   packet[2] = (offset >>> 8) & 0xFF;
   if (data) {
     const capped = data.slice(0, 28);
+    packet[3] = capped.length;
     for (let i = 0; i < capped.length; i++) {
       packet[4 + i] = capped[i]!;
     }
