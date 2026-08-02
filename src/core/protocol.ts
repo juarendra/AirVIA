@@ -13,12 +13,17 @@ export function createPacket(command: number, ...args: number[]): RawPacket {
 
 export function parseU32(packet: RawPacket, offset: number): number {
   return (
-    ((packet[offset + 3]! << 24) |
-      (packet[offset + 2]! << 16) |
-      (packet[offset + 1]! << 8) |
-      packet[offset]!) >>>
+    ((packet[offset]! << 24) |
+      (packet[offset + 1]! << 16) |
+      (packet[offset + 2]! << 8) |
+      packet[offset + 3]!) >>>
     0
   );
+}
+
+function writeU16BE(p: number[], o: number, v: number) {
+  p[o] = (v >>> 8) & 0xff;
+  p[o + 1] = v & 0xff;
 }
 
 export function parseU16BE(packet: RawPacket, offset: number): number {
@@ -36,8 +41,7 @@ function bufferPacket(
 ): RawPacket {
   const packet: RawPacket = Array<number>(PACKET_SIZE).fill(0);
   packet[0] = cmd;
-  packet[1] = offset & 0xFF;
-  packet[2] = (offset >>> 8) & 0xFF;
+  writeU16BE(packet, 1, offset);
   if (data) {
     const capped = data.slice(0, 28);
     packet[3] = capped.length;
@@ -144,7 +148,7 @@ export class Protocol {
   }
 
   static getMacroBuffer(offset: number, size: number): RawPacket {
-    return createPacket(0x0E, offset & 0xFF, (offset >>> 8) & 0xFF, size);
+    return createPacket(0x0E, (offset >>> 8) & 0xFF, offset & 0xFF, size);
   }
 
   static setMacroBuffer(offset: number, data: number[]): RawPacket {
@@ -160,7 +164,7 @@ export class Protocol {
   }
 
   static getKeymapBuffer(offset: number, size: number): RawPacket {
-    return createPacket(0x12, offset & 0xFF, (offset >>> 8) & 0xFF, size);
+    return createPacket(0x12, (offset >>> 8) & 0xFF, offset & 0xFF, size);
   }
 
   static setKeymapBuffer(offset: number, data: number[]): RawPacket {

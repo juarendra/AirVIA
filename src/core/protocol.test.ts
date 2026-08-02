@@ -28,8 +28,8 @@ describe('createPacket', () => {
 });
 
 describe('parseU32', () => {
-  it('parses little-endian u32', () => {
-    const by = [0x78, 0x56, 0x34, 0x12, 0, 0];
+  it('parses big-endian u32', () => {
+    const by = [0x12, 0x34, 0x56, 0x78, 0, 0];
     expect(parseU32(by, 0)).toBe(0x12345678);
   });
 });
@@ -158,37 +158,37 @@ describe('Protocol', () => {
     expect(pkt[31]).toBe(27);
   });
 
-  it('setMacroBuffer writes offset as little-endian u16', () => {
+  it('setMacroBuffer writes offset as big-endian u16', () => {
     const pkt = Protocol.setMacroBuffer(0x1234, []);
-    expect(pkt[1]).toBe(0x34);
-    expect(pkt[2]).toBe(0x12);
+    expect(pkt[1]).toBe(0x12);
+    expect(pkt[2]).toBe(0x34);
   });
 
   it('setKeymapBuffer caps data at 28 bytes (payload after header)', () => {
     const data = Array.from({ length: 40 }, (_, i) => i + 100);
     const pkt = Protocol.setKeymapBuffer(0x200, data);
     expect(pkt[0]).toBe(0x13);
-    expect(pkt[1]).toBe(0x00);
-    expect(pkt[2]).toBe(0x02);
+    expect(pkt[1]).toBe(0x02);
+    expect(pkt[2]).toBe(0x00);
     for (let i = 0; i < 28; i++) {
       expect(pkt[4 + i]).toBe(i + 100);
     }
     expect(pkt[32]).toBeUndefined();
   });
 
-  it('getMacroBuffer packs offset LE u16 and size', () => {
+  it('getMacroBuffer packs offset BE u16 and size', () => {
     const pkt = Protocol.getMacroBuffer(0xABCD, 5);
     expect(pkt[0]).toBe(0x0E);
-    expect(pkt[1]).toBe(0xCD);
-    expect(pkt[2]).toBe(0xAB);
+    expect(pkt[1]).toBe(0xAB);
+    expect(pkt[2]).toBe(0xCD);
     expect(pkt[3]).toBe(5);
   });
 
-  it('getKeymapBuffer packs offset LE u16 and size', () => {
+  it('getKeymapBuffer packs offset BE u16 and size', () => {
     const pkt = Protocol.getKeymapBuffer(0x300, 10);
     expect(pkt[0]).toBe(0x12);
-    expect(pkt[1]).toBe(0x00);
-    expect(pkt[2]).toBe(0x03);
+    expect(pkt[1]).toBe(0x03);
+    expect(pkt[2]).toBe(0x00);
     expect(pkt[3]).toBe(10);
   });
 });

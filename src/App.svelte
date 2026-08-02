@@ -40,14 +40,14 @@
       setLayerCount(pkt[1] ?? 1);
       return;
     }
-    // 0x12: keymap buffer response — offset(2B), size(1B), data
+    // 0x12: keymap buffer response — offset(2B BE), size(1B byte count), 16-bit keycode pairs
     if (cmd === 0x12) {
-      const offset = (pkt[1] ?? 0) | ((pkt[2] ?? 0) << 8);
-      const size = pkt[3] ?? 0;
-      for (let i = 0; i < size; i++) {
-        const idx = offset + i;
-        // ponytail: direct mutation via setKeymapAtIndex, Svelte $state proxy handles reactivity
-        setKeymapAtIndex(idx, pkt[4 + i] ?? 0);
+      const offset = ((pkt[1] ?? 0) << 8) | (pkt[2] ?? 0);
+      const byteCount = pkt[3] ?? 0;
+      for (let i = 0; i < byteCount; i += 2) {
+        const keycode = ((pkt[4 + i] ?? 0) << 8) | (pkt[4 + i + 1] ?? 0);
+        const idx = offset + (i >>> 1);
+        setKeymapAtIndex(idx, keycode);
       }
       return;
     }
