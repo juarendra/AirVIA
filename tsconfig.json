@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true,
+    "jsx": "preserve",
+    "paths": { "$lib/*": ["./src/*"] }
+  },
+  "include": ["src/**/*.ts", "src/**/*.svelte"]
+}
