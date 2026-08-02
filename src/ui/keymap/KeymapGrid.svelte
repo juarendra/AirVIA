@@ -4,7 +4,7 @@
 
   const def = $derived(getDefinition());
   const layer = $derived(getActiveLayer());
-  const cellSize = 48;
+  const cellSize = 52;
 
   const cols = $derived(def?.matrix.cols ?? 0);
 
@@ -31,7 +31,7 @@
 
 <div class="w-full h-full overflow-auto p-4">
   {#if !def}
-    <div class="text-gray-500 text-center mt-16">
+    <div class="text-slate-400 text-center mt-16">
       No definition loaded. Connect a device to view keymap.
     </div>
   {:else}

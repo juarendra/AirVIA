@@ -13,14 +13,14 @@
   }
 </script>
 
-<div class="bg-gray-800 rounded p-4 space-y-3">
+<div class="bg-white rounded-xl border border-slate-100 p-4 space-y-3">
   <div class="flex items-center justify-between">
-    <h3 class="text-sm font-semibold text-gray-300">Layout Options</h3>
-    <code class="text-xs text-blue-400 bg-gray-900 px-2 py-0.5 rounded">{hex}</code>
+    <h3 class="text-sm font-semibold text-slate-600">Layout Options</h3>
+    <code class="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{hex}</code>
   </div>
   <div class="grid grid-cols-4 gap-2">
     {#each Array.from({ length: 16 }, (_, i) => i) as i}
-      <label class="flex items-center gap-1.5 text-sm text-gray-400 cursor-pointer hover:text-gray-200 transition-colors select-none">
+      <label class="flex items-center gap-1.5 text-sm text-slate-500 cursor-pointer hover:text-slate-700 transition-colors select-none">
         <input
           type="checkbox"
           checked={!!(options & (1 << i))}

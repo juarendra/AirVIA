@@ -14,14 +14,14 @@
   const active = $derived(getActiveTab());
 </script>
 
-<nav class="bg-gray-900 border-b border-gray-700 flex">
+<nav class="bg-slate-100 mx-4 my-2 rounded-full p-1 flex">
   {#each tabs as tab}
     <button
       onclick={() => setActiveTab(tab.id)}
-      class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors
+      class="flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-medium transition-all
              {active === tab.id
-               ? 'text-blue-400 border-blue-500'
-               : 'text-gray-400 border-transparent hover:text-gray-300 hover:border-gray-600'}"
+               ? 'bg-white text-slate-800 shadow-sm'
+               : 'text-slate-500 hover:text-slate-700'}"
     >
       <Icon name={tab.icon} class="w-4 h-4" />
       {tab.label}

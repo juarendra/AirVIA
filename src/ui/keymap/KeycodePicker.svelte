@@ -57,8 +57,8 @@
       type="text"
       bind:value={search}
       placeholder="Search by label or hex code..."
-      class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-gray-100 text-sm
-             placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+      class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-slate-700 text-sm
+             placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-colors"
     />
 
     {#if !isSearching}
@@ -66,10 +66,10 @@
         {#each categories as cat}
           <button
             onclick={() => (activeCategory = cat)}
-            class="px-2.5 py-1 rounded text-xs font-medium transition-colors
+            class="rounded-full px-3 py-1 text-xs font-medium transition-colors
                    {activeCategory === cat
-                     ? 'bg-blue-600 text-white'
-                     : 'bg-gray-800 text-gray-400 hover:text-gray-200 hover:bg-gray-700'}"
+                     ? 'bg-blue-600 text-white shadow-sm'
+                     : 'bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200'}"
           >
             {CATEGORY_LABELS[cat]}
           </button>
@@ -80,11 +80,11 @@
         {#each categoryEntries as entry (entry.code)}
           <button
             onclick={() => select(entry)}
-            class="flex flex-col items-center justify-center p-2 bg-gray-800 border border-gray-700 rounded
-                   hover:border-blue-500 hover:bg-gray-750 transition-colors text-center gap-0.5"
+            class="flex flex-col items-center justify-center p-2 bg-slate-50 border border-slate-100 rounded-lg
+                   hover:border-blue-200 hover:bg-blue-50 transition-colors text-center gap-0.5"
           >
-            <span class="text-gray-100 text-xs font-medium">{labelWithoutPrefix(entry.label)}</span>
-            <span class="text-gray-500 text-[10px] font-mono">{hexStr(entry.code)}</span>
+             <span class="text-slate-700 text-xs font-medium">{labelWithoutPrefix(entry.label)}</span>
+            <span class="text-slate-400 text-[10px] font-mono">{hexStr(entry.code)}</span>
           </button>
         {/each}
       </div>
@@ -94,16 +94,16 @@
           {#each filteredEntries as entry (entry.code)}
             <button
               onclick={() => select(entry)}
-              class="flex flex-col items-center justify-center p-2 bg-gray-800 border border-gray-700 rounded
-                     hover:border-blue-500 hover:bg-gray-750 transition-colors text-center gap-0.5"
+             class="flex flex-col items-center justify-center p-2 bg-slate-50 border border-slate-100 rounded-lg
+                   hover:border-blue-200 hover:bg-blue-50 transition-colors text-center gap-0.5"
             >
-              <span class="text-gray-100 text-xs font-medium">{labelWithoutPrefix(entry.label)}</span>
-              <span class="text-gray-500 text-[10px] font-mono">{hexStr(entry.code)}</span>
+              <span class="text-slate-700 text-xs font-medium">{labelWithoutPrefix(entry.label)}</span>
+              <span class="text-slate-400 text-[10px] font-mono">{hexStr(entry.code)}</span>
             </button>
           {/each}
         </div>
       {:else}
-        <div class="text-center py-8 text-gray-500 text-sm">No keycodes found</div>
+        <div class="text-center py-8 text-slate-400 text-sm">No keycodes found</div>
       {/if}
     {/if}
   </div>

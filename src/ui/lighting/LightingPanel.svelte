@@ -20,12 +20,12 @@
 </script>
 
 <div class="max-w-xl mx-auto p-4">
-  <div class="bg-gray-900 rounded-lg border border-gray-700 p-6 space-y-5">
+  <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5">
     {#each sliders as s}
       <div class="space-y-1.5">
         <div class="flex justify-between items-baseline">
-          <label for="slider-{s.key}" class="text-sm font-medium text-gray-300">{s.label}</label>
-          <span class="text-xs text-gray-500 tabular-nums">{s.get()}</span>
+          <label for="slider-{s.key}" class="text-sm font-medium text-slate-600">{s.label}</label>
+          <span class="text-xs text-slate-400 tabular-nums">{s.get()}</span>
         </div>
         <input
           id="slider-{s.key}"
@@ -34,9 +34,9 @@
           max={s.max}
           value={s.get()}
           oninput={(e) => s.set(Number(e.currentTarget.value))}
-          class="w-full h-2 rounded-full appearance-none cursor-pointer bg-gray-700
-                 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg
-                 {accentTrack[s.accent]}"
+          class="w-full h-2 rounded-full appearance-none cursor-pointer bg-slate-200
+                 accent-blue-500
+                 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:shadow-md"
         />
       </div>
     {/each}

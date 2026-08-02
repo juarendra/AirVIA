@@ -140,7 +140,7 @@
 </script>
 
 <div
-  class="h-screen flex flex-col bg-gray-950 text-gray-100"
+  class="h-screen flex flex-col bg-slate-50 text-slate-700"
   role="application"
   ondrop={handleDrop}
   ondragover={handleDragOver}
@@ -171,8 +171,8 @@
   </div>
 
   {#if dragOver}
-    <div class="fixed inset-0 bg-blue-900/30 border-2 border-dashed border-blue-400 z-40 pointer-events-none flex items-center justify-center">
-      <span class="text-2xl text-blue-300 font-bold">Drop V3 definition JSON</span>
+    <div class="fixed inset-0 bg-black/20 border-2 border-dashed border-blue-400 z-40 pointer-events-none flex items-center justify-center">
+      <span class="text-2xl text-blue-500 font-bold">Drop V3 definition JSON</span>
     </div>
   {/if}
 
@@ -186,7 +186,7 @@
 
   <button
     onclick={triggerFileInput}
-    class="fixed bottom-4 left-4 z-50 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-gray-400 hover:text-white hover:border-gray-500 transition-colors"
+    class="fixed bottom-4 left-4 z-50 px-3 py-2 bg-white border border-dashed border-slate-300 rounded-xl text-sm text-slate-500 hover:text-slate-700 hover:border-slate-400 shadow-sm transition-colors"
     title="Load V3 definition JSON"
   >
     Load definition JSON

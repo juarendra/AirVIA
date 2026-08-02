@@ -7,14 +7,14 @@
   const layers = $derived(Array.from({ length: layerCount }, (_, i) => i));
 </script>
 
-<div class="bg-gray-900 border-b border-gray-700 px-3 py-1.5 flex items-center gap-1">
+<div class="bg-white border-b border-slate-100 px-3 py-1.5 flex items-center gap-1">
   {#each layers as layer (layer)}
     <button
       onclick={() => setActiveLayer(layer)}
-      class="px-3 py-1 text-xs font-medium rounded transition-colors
+      class="rounded-full px-3 py-1 text-xs font-medium transition-colors
              {active === layer
-               ? 'bg-blue-600 text-white'
-               : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'}"
+               ? 'bg-blue-600 text-white shadow-sm'
+               : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}"
     >
       L{layer}
     </button>

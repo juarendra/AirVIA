@@ -10,17 +10,17 @@
   const reversed = $derived([...log].reverse());
 </script>
 
-<div class="flex flex-col h-full bg-gray-950">
-  <div class="flex-1 overflow-y-auto p-3 font-mono text-sm">
+<div class="flex flex-col h-full bg-white">
+  <div class="flex-1 overflow-y-auto p-3 font-mono text-sm bg-slate-50 rounded-xl m-3">
     {#if reversed.length === 0}
-      <p class="text-gray-500 text-center mt-8">No packets yet. Connect to a device to see traffic.</p>
+      <p class="text-slate-400 text-center mt-8">No packets yet. Connect to a device to see traffic.</p>
     {:else}
       {#each reversed as entry}
-        <div class="flex gap-3 py-0.5 border-b border-gray-900 last:border-b-0">
-          <span class="{entry.dir === 'tx' ? 'text-blue-400' : 'text-green-400'} w-6 font-bold text-xs">
+        <div class="flex gap-3 py-0.5 border-b border-slate-100 last:border-b-0">
+          <span class="{entry.dir === 'tx' ? 'text-blue-600' : 'text-emerald-600'} w-6 font-bold text-xs">
             {entry.dir.toUpperCase()}
           </span>
-          <span class="text-gray-300">{hex8(entry.packet)}</span>
+          <span class="text-slate-600">{hex8(entry.packet)}</span>
         </div>
       {/each}
     {/if}
