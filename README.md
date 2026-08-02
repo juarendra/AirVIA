@@ -2,9 +2,15 @@
 
 Wireless keyboard configurator for VIA v13 over BLE. Load a V3 JSON definition, connect to your keyboard, and remap keys — no cables needed.
 
+## Try It
+
+**[Launch AirVIA →](https://juarendra.github.io/AirVIA/)**
+
+> Needs Chrome or Edge. Web Bluetooth API not supported in Firefox/Safari.
+
 ## Usage
 
-1. Open `index.html` in a browser
+1. Open the [live app](https://juarendra.github.io/AirVIA/) or serve locally
 2. Click **Connect** and pair with your BLE keyboard
 3. Load a V3 JSON definition file
 4. Edit keymaps, macros, lighting, encoders
@@ -14,7 +20,7 @@ Wireless keyboard configurator for VIA v13 over BLE. Load a V3 JSON definition, 
 ```sh
 pnpm install
 pnpm dev          # Vite dev server with HMR
-pnpm test         # Vitest unit tests
+pnpm test         # Vitest unit tests (84/84 pass)
 pnpm build        # Production build to dist/
 ```
 
