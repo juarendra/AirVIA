@@ -89,6 +89,10 @@ export function keycodeAt(layer: number, row: number, col: number): number {
   return keymap[layer * rows * cols + row * cols + col] ?? 0;
 }
 
+export function setKeymapAtIndex(index: number, value: number): void {
+  keymap[index] = value;
+}
+
 export function setKeycodeAt(layer: number, row: number, col: number, code: number): void {
   const rows = definition?.matrix.rows ?? 0;
   const cols = definition?.matrix.cols ?? 0;

@@ -2,6 +2,8 @@
   import Modal from '../shared/Modal.svelte';
   import { getSelectedCell, setSelectedCell, setKeycodeAt } from '../../store/app.svelte';
   import { KEYCODES_BY_CATEGORY, CATEGORY_LABELS, type KeycodeEntry, type KeycodeCategory } from '../../core/keycodes';
+  import { Protocol } from '../../core/protocol';
+  import { sendPacket } from '../../ble/dispatch';
 
   let search = $state('');
   let activeCategory = $state<KeycodeCategory>('basic');
@@ -29,6 +31,7 @@
     const cell = selectedCell;
     if (!cell) return;
     setKeycodeAt(cell.layer, cell.row, cell.col, entry.code);
+    sendPacket(Protocol.setKeycode(cell.layer, cell.row, cell.col, entry.code >> 8, entry.code & 0xFF));
     setSelectedCell(null);
     search = '';
   }

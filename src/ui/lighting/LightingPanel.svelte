@@ -1,14 +1,16 @@
 <script lang="ts">
   import { getLighting, setLightingBrightness, setLightingEffect, setLightingSpeed, setLightingHue, setLightingSaturation } from '../../store/app.svelte';
+  import { Protocol } from '../../core/protocol';
+  import { sendPacket } from '../../ble/dispatch';
 
   const lighting = $derived(getLighting());
 
   const sliders = [
-    { key: 'brightness', label: 'Brightness', min: 0, max: 255, get: () => lighting.brightness, set: (v: number) => setLightingBrightness(v), accent: 'blue' },
-    { key: 'effect',     label: 'Effect',     min: 0, max: 20,  get: () => lighting.effect,     set: (v: number) => setLightingEffect(v),     accent: 'blue' },
-    { key: 'speed',      label: 'Speed',      min: 0, max: 255, get: () => lighting.speed,      set: (v: number) => setLightingSpeed(v),      accent: 'blue' },
-    { key: 'hue',        label: 'Hue',        min: 0, max: 255, get: () => lighting.hue,        set: (v: number) => setLightingHue(v),        accent: 'pink' },
-    { key: 'saturation', label: 'Saturation', min: 0, max: 255, get: () => lighting.saturation, set: (v: number) => setLightingSaturation(v), accent: 'pink' },
+    { key: 'brightness', label: 'Brightness', min: 0, max: 255, get: () => lighting.brightness, set: (v: number) => { setLightingBrightness(v); sendPacket(Protocol.setCustomValue(0x01, v, 0)); }, accent: 'blue' },
+    { key: 'effect',     label: 'Effect',     min: 0, max: 20,  get: () => lighting.effect,     set: (v: number) => { setLightingEffect(v); sendPacket(Protocol.setCustomValue(0x02, v, 0)); },     accent: 'blue' },
+    { key: 'speed',      label: 'Speed',      min: 0, max: 255, get: () => lighting.speed,      set: (v: number) => { setLightingSpeed(v); sendPacket(Protocol.setCustomValue(0x03, v, 0)); },      accent: 'blue' },
+    { key: 'hue',        label: 'Hue',        min: 0, max: 255, get: () => lighting.hue,        set: (v: number) => { setLightingHue(v); sendPacket(Protocol.setCustomValue(0x04, v, lighting.saturation)); },        accent: 'pink' },
+    { key: 'saturation', label: 'Saturation', min: 0, max: 255, get: () => lighting.saturation, set: (v: number) => { setLightingSaturation(v); sendPacket(Protocol.setCustomValue(0x04, lighting.hue, v)); }, accent: 'pink' },
   ];
 
   const accentTrack: Record<string, string> = {

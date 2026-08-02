@@ -1,6 +1,8 @@
 <script lang="ts">
   import { getEncoderCount, getEncoderMap, getEncoderKeycode, setEncoderKeycode, getActiveLayer } from '../../store/app.svelte';
   import { KEYCODES_BY_CATEGORY, CATEGORY_LABELS, keycodeLabel, type KeycodeEntry, type KeycodeCategory } from '../../core/keycodes';
+  import { Protocol } from '../../core/protocol';
+  import { sendPacket } from '../../ble/dispatch';
   import Modal from '../shared/Modal.svelte';
 
   let editing = $state<{ enc: number; cw: boolean } | null>(null);
@@ -33,6 +35,7 @@
   function selectKeycode(code: number) {
     if (!editing) return;
     setEncoderKeycode(activeLayer, editing.enc, editing.cw, code);
+    sendPacket(Protocol.setEncoderKeycode(activeLayer, editing.enc, editing.cw ? 1 : 0, code >> 8, code & 0xFF));
     editing = null;
   }
 

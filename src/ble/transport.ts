@@ -37,35 +37,39 @@ export class BLETransport {
   async connect(): Promise<void> {
     this.#setState('connecting');
 
-    const device = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [VIA_SERVICE_UUID] }],
-    });
-    this.#device = device;
+    try {
+      const device = await navigator.bluetooth.requestDevice({
+        filters: [{ services: [VIA_SERVICE_UUID] }],
+      });
+      this.#device = device;
 
-    device.addEventListener('gattserverdisconnected', () => {
-      this.#queue.clear();
-      this.#clearTimeout();
-      this.#server = null;
-      this.#dataChar = null;
-      this.#infoChar = null;
-      this.#setState('disconnected');
-    });
+      device.addEventListener('gattserverdisconnected', () => {
+        this.#queue.clear();
+        this.#clearTimeout();
+        this.#server = null;
+        this.#dataChar = null;
+        this.#infoChar = null;
+        this.#setState('disconnected');
+      });
 
-    const server = await device.gatt!.connect();
-    this.#server = server;
+      const server = await device.gatt!.connect();
+      this.#server = server;
 
-    const service = await server.getPrimaryService(VIA_SERVICE_UUID);
-    this.#infoChar = await service.getCharacteristic(VIA_INFO_CHAR_UUID);
-    this.#dataChar = await service.getCharacteristic(VIA_DATA_CHAR_UUID);
+      const service = await server.getPrimaryService(VIA_SERVICE_UUID);
+      this.#infoChar = await service.getCharacteristic(VIA_INFO_CHAR_UUID);
+      this.#dataChar = await service.getCharacteristic(VIA_DATA_CHAR_UUID);
 
-    await this.#dataChar.startNotifications();
-    this.#dataChar.addEventListener(
-      'characteristicvaluechanged',
-      (evt: Event) => this.#onNotification(evt),
-    );
+      await this.#dataChar.startNotifications();
+      this.#dataChar.addEventListener(
+        'characteristicvaluechanged',
+        (evt: Event) => this.#onNotification(evt),
+      );
 
-    await this.#dataChar.readValue();
-    this.#setState('connected');
+      await this.#dataChar.readValue();
+      this.#setState('connected');
+    } catch {
+      this.#setState('error');
+    }
   }
 
   disconnect(): void {
@@ -87,6 +91,7 @@ export class BLETransport {
   }
 
   #onNotification(evt: Event) {
+    if (this.#state !== 'connected') return;
     const dv = (evt.target as BluetoothRemoteGATTCharacteristic).value;
     if (!dv || dv.byteLength !== PACKET_SIZE) return;
     const packet: RawPacket = Array.from(new Uint8Array(dv.buffer));

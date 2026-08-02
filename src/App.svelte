@@ -12,8 +12,10 @@
   import Toast from './ui/shared/Toast.svelte';
 
   import { BLETransport } from './ble/transport';
+  import { setTransport } from './ble/dispatch';
   import { Protocol } from './core/protocol';
   import { parseV3Definition } from './core/v3-definition';
+  import { type RawPacket } from './core/protocol';
   import {
     getActiveTab,
     setDefinition,
@@ -21,25 +23,60 @@
     addPacketLog,
     setLayerCount,
     setKeymap,
+    setKeymapAtIndex,
     setEncoderCount,
     setEncoderMap,
   } from './store/app.svelte';
 
   let transport: BLETransport | null = null;
 
+  function handleResponse(pkt: RawPacket) {
+    addPacketLog('rx', pkt);
+    if (pkt.length === 0) return;
+
+    const cmd = pkt[0]!;
+    // 0x11: layer count response — byte 1 = count
+    if (cmd === 0x11) {
+      setLayerCount(pkt[1] ?? 1);
+      return;
+    }
+    // 0x12: keymap buffer response — offset(2B), size(1B), data
+    if (cmd === 0x12) {
+      const offset = (pkt[1] ?? 0) | ((pkt[2] ?? 0) << 8);
+      const size = pkt[3] ?? 0;
+      for (let i = 0; i < size; i++) {
+        const idx = offset + i;
+        // ponytail: direct mutation via setKeymapAtIndex, Svelte $state proxy handles reactivity
+        setKeymapAtIndex(idx, pkt[4 + i] ?? 0);
+      }
+      return;
+    }
+  }
+
   async function handleConnect() {
     transport = new BLETransport();
     transport.onStateChange = (s) => setConnectionState(s);
-    transport.onResponse = (pkt) => addPacketLog('rx', pkt);
+    transport.onResponse = handleResponse;
     await transport.connect();
+    setTransport(transport);
 
+    // Handshake
     const handshake = Protocol.getProtocolVersion();
     transport.send(handshake);
     addPacketLog('tx', handshake);
+
+    // Read device info
+    const info = await transport.readInfo();
+    if (info) addPacketLog('rx', info);
+
+    // Read layer count
+    transport.send(Protocol.getLayerCount());
+    addPacketLog('tx', Protocol.getLayerCount());
   }
 
   function handleDisconnect() {
     transport?.disconnect();
+    setTransport(null);
     transport = null;
   }
 
