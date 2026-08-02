@@ -90,7 +90,7 @@ export class BLETransport {
     const dv = (evt.target as BluetoothRemoteGATTCharacteristic).value;
     if (!dv || dv.byteLength !== PACKET_SIZE) return;
     const packet: RawPacket = Array.from(new Uint8Array(dv.buffer));
-    this.#queue.resolve();
+    this.#queue.resolve(packet);
     this.#_flush();
     this.onResponse?.(packet);
   }

@@ -32,6 +32,10 @@ export class PacketQueue {
     return this.current;
   }
 
+  flush(): RawPacket | null {
+    return this.inFlight();
+  }
+
   resolve(_response: RawPacket): void {
     this.current = null;
   }
