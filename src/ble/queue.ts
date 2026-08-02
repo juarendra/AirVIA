@@ -39,7 +39,7 @@ export class PacketQueue {
   timeout(): void {
     if (!this.current) return;
     this.retriesLeft--;
-    if (this.retriesLeft < 0) {
+    if (this.retriesLeft <= 0) {
       this.current = null;
     }
   }
