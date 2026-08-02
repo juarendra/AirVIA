@@ -22,7 +22,7 @@ export class BLETransport {
   #server: BluetoothRemoteGATTServer | null = null;
   #dataChar: BluetoothRemoteGATTCharacteristic | null = null;
   #infoChar: BluetoothRemoteGATTCharacteristic | null = null;
-  #queue = new PacketQueue({ retries: 3, timeoutMs: 500, maxDepth: 8 });
+  #queue = new PacketQueue({ retries: 3, maxDepth: 8 });
   #timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   get state(): TransportState {
@@ -95,21 +95,22 @@ export class BLETransport {
     const dv = (evt.target as BluetoothRemoteGATTCharacteristic).value;
     if (!dv || dv.byteLength !== PACKET_SIZE) return;
     const packet: RawPacket = Array.from(new Uint8Array(dv.buffer));
-    this.#queue.resolve(packet);
+    this.#queue.resolve();
     this.#_flush();
     this.onResponse?.(packet);
   }
 
   #_flush(): void {
     // ponytail: global timeout, per-packet timers if reordering matters
-    const pkt = this.#queue.flush();
+    const pkt = this.#queue.takeForSend();
     if (!pkt || !this.#dataChar) return;
 
     this.#dataChar.writeValueWithoutResponse(new Uint8Array(pkt));
+    this.#queue.markSent();
     this.#clearTimeout();
     this.#timeoutId = setTimeout(() => {
-      this.#queue.timeout();
-      this.#_flush();
+      const retried = this.#queue.retry();
+      if (retried) this.#_flush();
     }, 500);
   }
 

@@ -1,38 +1,33 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { PacketQueue, type QueueConfig } from './queue';
 import { type RawPacket } from '../core/protocol';
 
 const pkt = (...bytes: number[]): RawPacket => bytes;
 
 function makeConfig(overrides: Partial<QueueConfig> = {}): QueueConfig {
-  return { retries: 3, timeoutMs: 1000, maxDepth: 10, ...overrides };
+  return { retries: 3, maxDepth: 10, ...overrides };
 }
 
 describe('PacketQueue', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
-
   it('dequeues first enqueued packet', () => {
     const q = new PacketQueue(makeConfig());
     q.enqueue(pkt(1));
     q.enqueue(pkt(2));
-    expect(q.inFlight()).toEqual(pkt(1));
+    expect(q.takeForSend()).toEqual(pkt(1));
   });
 
   it('returns null when empty', () => {
     const q = new PacketQueue(makeConfig());
-    expect(q.inFlight()).toBeNull();
+    expect(q.takeForSend()).toBeNull();
   });
 
   it('resolve advances to next', () => {
     const q = new PacketQueue(makeConfig());
     q.enqueue(pkt(1));
     q.enqueue(pkt(2));
-    const first = q.inFlight();
-    expect(first).toEqual(pkt(1));
-    q.resolve(pkt(0xFF));
-    expect(q.inFlight()).toEqual(pkt(2));
+    expect(q.takeForSend()).toEqual(pkt(1));
+    q.resolve();
+    expect(q.takeForSend()).toEqual(pkt(2));
   });
 
   it('retry on timeout (3 timeouts exhaust and advance)', () => {
@@ -40,26 +35,26 @@ describe('PacketQueue', () => {
     q.enqueue(pkt(1));
     q.enqueue(pkt(2));
 
-    expect(q.inFlight()).toEqual(pkt(1));
+    expect(q.takeForSend()).toEqual(pkt(1));
 
-    q.timeout();
-    expect(q.inFlight()).toEqual(pkt(1)); // retry 1
+    q.retry();
+    expect(q.takeForSend()).toEqual(pkt(1)); // retry 1
 
-    q.timeout();
-    expect(q.inFlight()).toEqual(pkt(1)); // retry 2
+    q.retry();
+    expect(q.takeForSend()).toEqual(pkt(1)); // retry 2
 
-    q.timeout(); // exhausted
-    expect(q.inFlight()).toEqual(pkt(2));
+    q.retry(); // exhausted
+    expect(q.takeForSend()).toEqual(pkt(2));
   });
 
-  it('stops after max retries (config retries=1, timeout → advance)', () => {
+  it('stops after max retries (config retries=1, retry → advance)', () => {
     const q = new PacketQueue(makeConfig({ retries: 1 }));
     q.enqueue(pkt(1));
     q.enqueue(pkt(2));
 
-    expect(q.inFlight()).toEqual(pkt(1));
-    q.timeout();
-    expect(q.inFlight()).toEqual(pkt(2));
+    expect(q.takeForSend()).toEqual(pkt(1));
+    q.retry();
+    expect(q.takeForSend()).toEqual(pkt(2));
   });
 
   it('rejects enqueue when full', () => {
@@ -73,9 +68,9 @@ describe('PacketQueue', () => {
     const q = new PacketQueue(makeConfig());
     q.enqueue(pkt(1));
     q.enqueue(pkt(2));
-    q.inFlight();
+    q.takeForSend();
     q.clear();
     expect(q.pendingCount).toBe(0);
-    expect(q.inFlight()).toBeNull();
+    expect(q.hasInFlight()).toBe(false);
   });
 });
