@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { getConnectionState, setConnectionState } from '../store/app.svelte';
+  import { getConnectionState, getSyncPhase, getSyncProgress, getDeviceName, setConnectionState } from '../store/app.svelte';
   import type { TransportState } from '../ble/transport';
   import Icon from './shared/Icon.svelte';
 
   let { onConnect, onDisconnect }: {
     onConnect: () => Promise<void>;
-    onDisconnect: () => void;
+    onDisconnect: () => Promise<void>;
   } = $props();
 
   let error = $state<string | null>(null);
@@ -51,6 +51,16 @@
       <span class="inline-block w-2.5 h-2.5 rounded-full {stateDot[state]}" aria-label={state}></span>
       <span class="text-sm text-slate-500 px-3 py-0.5 rounded-full bg-slate-100 text-xs font-medium">{stateLabel(state)}</span>
     </div>
+    {#if state === 'connected' || getSyncPhase() === 'syncing' || getSyncPhase() === 'ready'}
+      <span class="text-xs text-slate-400 ml-1">{getDeviceName() || 'VIA Keyboard'}</span>
+      {#if getSyncPhase() === 'syncing'}
+        <span class="text-xs text-blue-500 animate-pulse">{getSyncProgress()}</span>
+      {:else if getSyncPhase() === 'ready'}
+        <span class="text-xs text-green-600">Ready</span>
+      {:else if getSyncPhase() === 'error'}
+        <span class="text-xs text-red-500">{getSyncProgress()}</span>
+      {/if}
+    {/if}
   </div>
 
   <div class="flex items-center gap-3">

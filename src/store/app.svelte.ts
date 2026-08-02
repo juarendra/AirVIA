@@ -22,6 +22,20 @@ let speed = $state<number>(3);
 let hue = $state<number>(0);
 let saturation = $state<number>(255);
 
+export type SyncPhase =
+  | 'idle'
+  | 'connecting'
+  | 'connected'
+  | 'syncing'
+  | 'ready'
+  | 'error';
+
+let syncPhase = $state<SyncPhase>('idle');
+let syncProgress = $state('');
+let deviceName = $state('');
+let protocolVersion = $state(0);
+let firmwareVersion = $state(0);
+
 let selectedCell = $state<{ layer: number; row: number; col: number } | null>(null);
 
 let packetLog = $state<Array<{ dir: 'tx' | 'rx'; packet: RawPacket }>>([]);
@@ -70,6 +84,18 @@ export function setLightingEffect(v: number) { effect = v; }
 export function setLightingSpeed(v: number) { speed = v; }
 export function setLightingHue(v: number) { hue = v; }
 export function setLightingSaturation(v: number) { saturation = v; }
+
+export function getSyncPhase(): SyncPhase { return syncPhase; }
+export function getSyncProgress(): string { return syncProgress; }
+export function getDeviceName(): string { return deviceName; }
+export function getProtocolVersion(): number { return protocolVersion; }
+export function getFirmwareVersion(): number { return firmwareVersion; }
+
+export function setSyncPhase(p: SyncPhase) { syncPhase = p; }
+export function setSyncProgress(s: string) { syncProgress = s; }
+export function setDeviceName(n: string) { deviceName = n; }
+export function setProtocolVersion(v: number) { protocolVersion = v; }
+export function setFirmwareVersion(v: number) { firmwareVersion = v; }
 
 export function getSelectedCell(): { layer: number; row: number; col: number } | null { return selectedCell; }
 export function setSelectedCell(cell: { layer: number; row: number; col: number } | null) { selectedCell = cell; }

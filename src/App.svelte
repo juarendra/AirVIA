@@ -13,9 +13,8 @@
 
   import { BLETransport } from './ble/transport';
   import { setTransport } from './ble/dispatch';
-  import { Protocol } from './core/protocol';
+  import { synchronizeDevice } from './device/synchronizer';
   import { parseV3Definition } from './core/v3-definition';
-  import { type RawPacket } from './core/protocol';
   import {
     getActiveTab,
     setDefinition,
@@ -23,35 +22,14 @@
     addPacketLog,
     setLayerCount,
     setKeymap,
-    setKeymapAtIndex,
     setEncoderCount,
     setEncoderMap,
+    setDeviceName,
+    setSyncPhase,
+    setSyncProgress,
   } from './store/app.svelte';
 
   let transport: BLETransport | null = null;
-
-  function handleResponse(pkt: RawPacket) {
-    addPacketLog('rx', pkt);
-    if (pkt.length === 0) return;
-
-    const cmd = pkt[0]!;
-    // 0x11: layer count response — byte 1 = count
-    if (cmd === 0x11) {
-      setLayerCount(pkt[1] ?? 1);
-      return;
-    }
-    // 0x12: keymap buffer response — offset(2B BE), size(1B byte count), 16-bit keycode pairs
-    if (cmd === 0x12) {
-      const offset = ((pkt[1] ?? 0) << 8) | (pkt[2] ?? 0);
-      const byteCount = pkt[3] ?? 0;
-      for (let i = 0; i < byteCount; i += 2) {
-        const keycode = ((pkt[4 + i] ?? 0) << 8) | (pkt[4 + i + 1] ?? 0);
-        const idx = offset + (i >>> 1);
-        setKeymapAtIndex(idx, keycode);
-      }
-      return;
-    }
-  }
 
   async function handleConnect() {
     transport = new BLETransport();
@@ -61,26 +39,38 @@
         setTransport(null);
       }
     };
-    transport.onResponse = handleResponse;
-    await transport.connect();
+    transport.onResponse = (pkt) => addPacketLog('rx', pkt);
+
+    try {
+      await transport.connect();
+    } catch (err) {
+      transport = null;
+      return;
+    }
+
     setTransport(transport);
 
-    // Handshake
-    const handshake = Protocol.getProtocolVersion();
-    transport.send(handshake);
-    addPacketLog('tx', handshake);
-
-    // Read device info
     const info = await transport.readInfo();
-    if (info) addPacketLog('rx', info);
+    if (info) {
+      addPacketLog('rx', info);
+      const nameBytes = info.slice(4).filter(b => b !== 0);
+      if (nameBytes.length > 0) {
+        setDeviceName(String.fromCharCode(...nameBytes));
+      }
+    }
 
-    // Read layer count
-    transport.send(Protocol.getLayerCount());
-    addPacketLog('tx', Protocol.getLayerCount());
+    try {
+      await synchronizeDevice();
+    } catch (err) {
+      console.error('Sync failed:', err);
+      setSyncPhase('error');
+      setSyncProgress('Sync failed — try reconnecting');
+      return;
+    }
   }
 
-  function handleDisconnect() {
-    transport?.disconnect();
+  async function handleDisconnect() {
+    await transport?.disconnect();
     setTransport(null);
     transport = null;
   }

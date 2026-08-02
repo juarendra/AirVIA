@@ -1,51 +1,67 @@
 <script lang="ts">
-  import { getDefinition, getActiveLayer } from '../../store/app.svelte';
+  import { getDefinition, getActiveLayer, getSyncPhase, getSyncProgress } from '../../store/app.svelte';
   import KeymapCell from './KeymapCell.svelte';
 
   const def = $derived(getDefinition());
-  const layer = $derived(getActiveLayer());
-  const cellSize = 52;
+  const activeLayer = $derived(getActiveLayer());
+  const CELL = 52;
 
-  const cols = $derived(def?.matrix.cols ?? 0);
+  const positions = $derived(() => {
+    if (!def) return [];
+    return def.layouts.keymap.map(k => ({
+      ...k,
+      row: k.row,
+      col: k.col,
+    }));
+  });
 
-  const positions = $derived(
-    def
-      ? def.layouts.keymap.map((k, i) => {
-          const r = Math.floor(i / cols);
-          const c = i % cols;
-          return { key: k, row: r, col: c, index: i };
-        })
-      : [],
-  );
-
-  const maxX = $derived(
-    def ? def.layouts.keymap.reduce((max, k) => Math.max(max, k.x + (k.w ?? 1)), 0) : 0,
-  );
-  const maxY = $derived(
-    def ? def.layouts.keymap.reduce((max, k) => Math.max(max, k.y + (k.h ?? 1)), 0) : 0,
-  );
-
-  const containerW = $derived((maxX + 1) * cellSize);
-  const containerH = $derived((maxY + 1) * cellSize);
+  const containerStyle = $derived(() => {
+    if (!def || !positions.length) return {};
+    const maxX = Math.max(...positions.map(p => p.x + (p.w ?? 1)));
+    const maxY = Math.max(...positions.map(p => p.y + (p.h ?? 1)));
+    return {
+      width: `${maxX * CELL}px`,
+      height: `${maxY * CELL}px`,
+      position: 'relative',
+    };
+  });
 </script>
 
-<div class="w-full h-full overflow-auto p-4">
-  {#if !def}
-    <div class="text-slate-400 text-center mt-16">
-      No definition loaded. Connect a device to view keymap.
-    </div>
-  {:else}
-    <div
-      class="relative mx-auto"
-      style="width: {containerW}px; height: {containerH}px"
-    >
-      {#each positions as pos (pos.index)}
-        <div
-          style="position: absolute; left: {pos.key.x * cellSize}px; top: {pos.key.y * cellSize}px; width: {(pos.key.w ?? 1) * cellSize - 4}px; height: {(pos.key.h ?? 1) * cellSize - 4}px"
-        >
-          <KeymapCell layer={layer} row={pos.row} col={pos.col} />
-        </div>
+{#if def}
+  <div class="p-4 overflow-auto relative">
+    {#if getSyncPhase() !== 'ready'}
+      <div class="absolute inset-0 bg-white/60 flex items-center justify-center z-10 rounded-lg">
+        <span class="text-slate-500 font-medium text-sm">
+          {getSyncPhase() === 'syncing' ? getSyncProgress() : 'Connect and sync to edit'}
+        </span>
+      </div>
+    {/if}
+    <div class="mx-auto" style={containerStyle}>
+      {#each positions as pos (pos.row * def.matrix.cols + pos.col)}
+        {@const style = `position:absolute;left:${pos.x * CELL}px;top:${pos.y * CELL}px;width:${(pos.w ?? 1) * CELL - 4}px;height:${(pos.h ?? 1) * CELL - 4}px;`}
+        {#if (pos.r ?? 0) !== 0}
+          {@const rx = (pos.rx ?? 0) * CELL}
+          {@const ry = (pos.ry ?? 0) * CELL}
+          <div style={`${style}transform:rotate(${pos.r}deg);transform-origin:${rx}px ${ry}px`}>
+            <KeymapCell layer={activeLayer} row={pos.row} col={pos.col} />
+          </div>
+        {:else}
+          <div style={style} class="p-0.5">
+            <KeymapCell layer={activeLayer} row={pos.row} col={pos.col} />
+          </div>
+        {/if}
       {/each}
     </div>
-  {/if}
-</div>
+    <div class="text-xs text-slate-400 text-center mt-2">
+      {def.name} &mdash; {def.matrix.rows}&times;{def.matrix.cols} matrix
+    </div>
+  </div>
+{:else}
+  <div class="flex items-center justify-center h-64">
+    <div class="text-center text-slate-400">
+      <p class="text-lg mb-2">No definition loaded</p>
+      <p class="text-sm">Use the button at bottom-left to load a V3 definition JSON file.</p>
+      <p class="text-xs mt-1">VIA v3 schema with explicit matrix coordinates per key.</p>
+    </div>
+  </div>
+{/if}

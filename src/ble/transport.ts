@@ -34,6 +34,11 @@ export class BLETransport {
     this.onStateChange?.(s);
   }
 
+  async writePacket(packet: RawPacket): Promise<void> {
+    if (!this.#dataChar) throw new Error('Not connected');
+    await this.#dataChar.writeValueWithoutResponse(new Uint8Array(packet));
+  }
+
   async connect(): Promise<void> {
     this.#setState('connecting');
 
@@ -44,12 +49,12 @@ export class BLETransport {
       this.#device = device;
 
       device.addEventListener('gattserverdisconnected', () => {
-        this.#clearTimeout();
         this.#queue.clear();
+        this.#clearTimeout();
         this.#server = null;
         this.#dataChar = null;
         this.#infoChar = null;
-        this.#setState('disconnected');
+        if (this.#state !== 'error') this.#setState('disconnected');
       });
 
       const server = await device.gatt!.connect();
@@ -67,8 +72,10 @@ export class BLETransport {
 
       await this.#dataChar.readValue();
       this.#setState('connected');
-    } catch {
+    } catch (err) {
+      await this.#cleanup();
       this.#setState('error');
+      throw err;
     }
   }
 
@@ -82,14 +89,14 @@ export class BLETransport {
     this.#infoChar = null;
   }
 
-  disconnect(): void {
-    this.#cleanup();
+  async disconnect(): Promise<void> {
+    await this.#cleanup();
     this.#setState('disconnected');
   }
 
-  send(packet: RawPacket): void {
+  async send(packet: RawPacket): Promise<void> {
     this.#queue.enqueue(packet);
-    this.#_flush();
+    await this.#_flush();
   }
 
   async readInfo(): Promise<RawPacket | null> {
@@ -109,13 +116,20 @@ export class BLETransport {
     this.onResponse?.(packet);
   }
 
-  #_flush(): void {
+  async #_flush(): Promise<void> {
     // ponytail: global timeout, per-packet timers if reordering matters
     const pkt = this.#queue.takeForSend();
     if (!pkt || !this.#dataChar) return;
 
-    this.#dataChar.writeValueWithoutResponse(new Uint8Array(pkt));
-    this.#queue.markSent();
+    try {
+      await this.#dataChar.writeValueWithoutResponse(new Uint8Array(pkt));
+      this.#queue.markSent();
+    } catch (_err) {
+      this.#queue.retry();
+      this.#_flush();
+      return;
+    }
+
     this.#clearTimeout();
     this.#timeoutId = setTimeout(() => {
       const retried = this.#queue.retry();
