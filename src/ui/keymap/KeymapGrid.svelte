@@ -4,16 +4,9 @@
 
   const def = $derived(getDefinition());
   const layer = $derived(getActiveLayer());
+  const cellSize = 48;
 
   const cols = $derived(def?.matrix.cols ?? 0);
-  const rows = $derived(def?.matrix.rows ?? 0);
-
-  const gridCols = $derived(
-    def ? def.layouts.keymap.reduce((max, k) => Math.max(max, k.x + (k.w ?? 1)), 0) : 0,
-  );
-  const gridRows = $derived(
-    def ? def.layouts.keymap.reduce((max, k) => Math.max(max, k.y + (k.h ?? 1)), 0) : 0,
-  );
 
   const positions = $derived(
     def
@@ -24,6 +17,16 @@
         })
       : [],
   );
+
+  const maxX = $derived(
+    def ? def.layouts.keymap.reduce((max, k) => Math.max(max, k.x + (k.w ?? 1)), 0) : 0,
+  );
+  const maxY = $derived(
+    def ? def.layouts.keymap.reduce((max, k) => Math.max(max, k.y + (k.h ?? 1)), 0) : 0,
+  );
+
+  const containerW = $derived((maxX + 1) * cellSize);
+  const containerH = $derived((maxY + 1) * cellSize);
 </script>
 
 <div class="w-full h-full overflow-auto p-4">
@@ -33,12 +36,12 @@
     </div>
   {:else}
     <div
-      class="grid gap-1 mx-auto"
-      style="grid-template-columns: repeat({gridCols}, minmax(3rem, 1fr)); grid-template-rows: repeat({gridRows}, minmax(3rem, 1fr))"
+      class="relative mx-auto"
+      style="width: {containerW}px; height: {containerH}px"
     >
       {#each positions as pos (pos.index)}
         <div
-          style="grid-column: {pos.key.x + 1} / span {pos.key.w ?? 1}; grid-row: {pos.key.y + 1} / span {pos.key.h ?? 1}"
+          style="position: absolute; left: {pos.key.x * cellSize}px; top: {pos.key.y * cellSize}px; width: {(pos.key.w ?? 1) * cellSize - 4}px; height: {(pos.key.h ?? 1) * cellSize - 4}px"
         >
           <KeymapCell layer={layer} row={pos.row} col={pos.col} />
         </div>
