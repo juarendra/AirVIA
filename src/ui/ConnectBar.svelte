@@ -68,9 +68,9 @@
     {#if state === 'connected' || getSyncPhase() === 'syncing' || getSyncPhase() === 'ready'}
       <span class="text-xs text-text-primary ml-1">{getDeviceName() || 'VIA Keyboard'}</span>
       {#if getSyncPhase() === 'syncing'}
-        <span class="text-xs text-accent-blue animate-pulse">{getSyncProgress()}</span>
+        <span class="text-xs text-accent-cyan animate-pulse">{getSyncProgress()}</span>
       {:else if getSyncPhase() === 'ready'}
-        <span class="text-xs text-accent-green">Ready</span>
+        <span class="text-xs text-accent-lime">Ready</span>
       {:else if getSyncPhase() === 'error'}
         <span class="text-xs text-accent-red">{getSyncProgress()}</span>
       {/if}
@@ -85,13 +85,13 @@
     {#if saveState === 'dirty'}
       <button onclick={handleSave}
         disabled={state !== 'connected'}
-        class="px-3 py-1.5 bg-accent-blue text-white rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-colors">
+        class="px-3 py-1.5 bg-accent-cyan text-bg-dark rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-colors">
         Save
       </button>
     {:else if saveState === 'saving'}
       <span class="text-sm text-text-muted">Saving...</span>
     {:else if saveState === 'saved'}
-      <span class="text-sm text-accent-green">&#10003;</span>
+      <span class="text-sm text-accent-lime">&#10003;</span>
     {:else if saveState === 'failed'}
       <button onclick={handleSave}
         disabled={state !== 'connected'}

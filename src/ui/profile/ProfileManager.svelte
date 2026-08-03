@@ -1,6 +1,6 @@
 <script lang="ts">
   import { exportProfileBlob, parseProfile, type KeyboardProfile } from '../../store/profile';
-  import { getKeymap, getDeviceName, setKeymap } from '../../store/app.svelte';
+  import { getKeymap, getDeviceName, setKeymap, getDefinition } from '../../store/app.svelte';
   import { toast } from '../shared/Toast.svelte';
 
   function handleExport() {
@@ -26,6 +26,9 @@
     const reader = new FileReader();
     reader.onload = () => {
       try {
+        if (!getDefinition()) {
+          throw new Error('Please load a keyboard definition first');
+        }
         const profile = parseProfile(reader.result as string);
         setKeymap(profile.keymap);
         toast('Profile imported', 'success');
@@ -39,8 +42,8 @@
 </script>
 
 <div class="p-4 border-t border-surface-raised flex gap-2">
-  <button onclick={handleExport} class="px-3 py-1 bg-surface-raised hover:bg-slate-700 text-sm rounded">Export</button>
-  <label class="px-3 py-1 bg-surface-raised hover:bg-slate-700 text-sm rounded cursor-pointer">
+  <button onclick={handleExport} class="px-3 py-1 bg-surface-raised hover:bg-surface-elevated text-sm rounded">Export</button>
+  <label class="px-3 py-1 bg-surface-raised hover:bg-surface-elevated text-sm rounded cursor-pointer">
     Import
     <input type="file" accept=".json" onchange={handleImport} class="hidden" />
   </label>
