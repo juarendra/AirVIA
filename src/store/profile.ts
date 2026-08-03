@@ -26,3 +26,8 @@ export function parseProfile(input: string): KeyboardProfile {
     throw new Error('Invalid profile data');
   }
 }
+
+export function exportProfileBlob(profile: KeyboardProfile): Blob {
+  const data = serializeProfile(profile);
+  return new Blob([data], { type: 'application/json' });
+}

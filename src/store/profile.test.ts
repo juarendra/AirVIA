@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { serializeProfile, parseProfile, type KeyboardProfile } from './profile';
+import { serializeProfile, parseProfile, exportProfileBlob, type KeyboardProfile } from './profile';
 
 describe('Profile Serialization', () => {
   it('round-trips a valid profile', () => {
@@ -15,5 +15,11 @@ describe('Profile Serialization', () => {
 
   it('rejects profile without version', () => {
     expect(() => parseProfile('{}')).toThrow('Unsupported profile version');
+  });
+
+  it('creates an exportable Blob', () => {
+    const p: KeyboardProfile = { version: 1, name: 'Test', timestamp: 1234, keymap: [1, 2, 3] };
+    const blob = exportProfileBlob(p);
+    expect(blob.type).toBe('application/json');
   });
 });
