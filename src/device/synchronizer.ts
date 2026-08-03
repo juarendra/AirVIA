@@ -3,8 +3,6 @@ import { Protocol } from '../core/protocol';
 import { decodeLayerCount, decodeBufferChunk, decodeMacroCount, decodeMacroBufferSize } from '../core/commands';
 import { sendViaCommand } from '../ble/dispatch';
 import {
-  setSyncPhase, setSyncProgress, setLayerCount, setKeymap, setKeymapAtIndex,
-  setEncoderCount, setEncoderMap, setMacroCount, setMacroBytes,
   getDefinition,
 } from '../store/app.svelte';
 
