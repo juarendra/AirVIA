@@ -71,7 +71,26 @@
     }
 
     try {
-      await synchronizeDevice();
+      const snapshot = await synchronizeDevice();
+      setLayerCount(snapshot.layers);
+      setKeymap(snapshot.keymap);
+      
+      if (snapshot.encoders) {
+        setEncoderCount(getDefinition()!.encoders ?? 0);
+        setEncoderMap(snapshot.encoders);
+      } else {
+        setEncoderCount(0);
+        setEncoderMap(null);
+      }
+
+      if (snapshot.macros) {
+        setMacroCount(snapshot.macros.count);
+        setMacroBytes(snapshot.macros.bytes);
+      } else {
+        setMacroCount(null);
+        setMacroBytes(null);
+      }
+
       toast('Synchronized', 'success');
     } catch (err) {
       console.error('Sync failed:', err);
