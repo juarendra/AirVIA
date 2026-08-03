@@ -30,11 +30,18 @@
     setDeviceName,
     setSyncPhase,
     setSyncProgress,
+    resetDeviceState,
+    getDefinition,
   } from './store/app.svelte';
 
   let transport: BLETransport | null = null;
 
   async function handleConnect() {
+    if (!getDefinition()) {
+      toast('Please load a definition file first', 'error');
+      return;
+    }
+
     transport = new BLETransport();
     transport.onStateChange = (s) => {
       setConnectionState(s);
@@ -79,6 +86,7 @@
     await transport?.disconnect();
     setTransport(null);
     transport = null;
+    resetDeviceState();
   }
 
   let fileInput: HTMLInputElement;
@@ -118,7 +126,7 @@
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       try {
         const def = parseV3Definition(reader.result as string);
         setDefinition(def);
@@ -133,6 +141,12 @@
         if (def.encoders) {
           setEncoderCount(def.encoders);
           setEncoderMap(new Array(4 * def.encoders * 2).fill(0));
+        }
+
+        if (transport) {
+          // Changed def while connected, force disconnect to re-verify matrix
+          toast('Definition changed, disconnecting to re-sync', 'error');
+          await handleDisconnect();
         }
       } catch (e: unknown) {
         if (e instanceof Error) {

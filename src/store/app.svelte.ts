@@ -47,16 +47,50 @@ export function setDefinition(def: V3Definition | null) { definition = def; }
 
 let saveState = $state<SaveState>('clean');
 let pendingChanges = $state(0);
+let editDuringSave = $state(0);
 
 export function getSaveState(): SaveState { return saveState; }
 export function getPendingChanges(): number { return pendingChanges; }
 export function markDirty() {
-  if (saveState !== 'saving') saveState = 'dirty';
+  if (saveState === 'saving') {
+    editDuringSave++;
+  } else {
+    saveState = 'dirty';
+  }
   pendingChanges++;
 }
-export function markSaving() { saveState = 'saving'; }
-export function markSaved() { saveState = 'saved'; pendingChanges = 0; setTimeout(() => { if (saveState === 'saved') saveState = 'clean'; }, 3000); }
+export function markSaving() { saveState = 'saving'; editDuringSave = 0; }
+export function markSaved() {
+  if (editDuringSave > 0) {
+    saveState = 'dirty';
+    pendingChanges = editDuringSave;
+    editDuringSave = 0;
+  } else {
+    saveState = 'saved';
+    pendingChanges = 0;
+    setTimeout(() => { if (saveState === 'saved') saveState = 'clean'; }, 3000);
+  }
+}
 export function markSaveFailed() { saveState = 'failed'; }
+
+export function resetDeviceState() {
+  setConnectionState('disconnected');
+  setSyncPhase('idle');
+  setSyncProgress('');
+  setDeviceName('');
+  setProtocolVersion(0);
+  setFirmwareVersion(0);
+  setLayerCount(0);
+  setEncoderCount(0);
+  setMacroCount(null);
+  setMacroBytes(null);
+  setLayoutOptions(null);
+  setLighting(null);
+  // ponytail: leave layout/definition, clear mapped device values
+  saveState = 'clean';
+  pendingChanges = 0;
+  editDuringSave = 0;
+}
 
 export function getConnectionState(): TransportState { return connectionState; }
 export function setConnectionState(s: TransportState) { connectionState = s; }
