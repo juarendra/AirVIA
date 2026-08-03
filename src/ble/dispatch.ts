@@ -9,33 +9,24 @@ export function setTransport(t: BLETransport | null) {
 
 export async function sendPacket(pkt: RawPacket): Promise<void> {
   if (!transport) throw new Error('Not connected');
-  await transport.send(pkt);
+  // Fire and forget send is now handled through queue with dummy callbacks to drop wait
+  transport.sendCommand({
+    packet: pkt,
+    matches: () => true, // Auto-match if responses arrive
+    decode: <T>(res: RawPacket) => res as unknown as T,
+    resolve: () => {},
+    reject: () => {},
+  }).catch(() => { /* fire and forget */ });
 }
 
-export async function sendViaCommand(packet: RawPacket, timeoutMs = 5000): Promise<RawPacket> {
+export async function sendViaCommand(packet: RawPacket, _timeoutMs = 5000): Promise<RawPacket> {
   if (!transport) throw new Error('Not connected');
 
-  const cmd = packet[0]!;
-  const prevHandler = transport.onResponse;
-
-  const result = new Promise<RawPacket>((resolve, reject) => {
-    const timer = setTimeout(() => {
-      transport!.onResponse = prevHandler;
-      reject(new Error(`Command 0x${cmd.toString(16).padStart(2, '0')} timed out`));
-    }, timeoutMs);
-
-    transport!.onResponse = (pkt) => {
-      if (pkt.length > 0 && (pkt[0] === cmd || pkt[0] === 0)) {
-        clearTimeout(timer);
-        transport!.onResponse = prevHandler;
-        resolve(pkt);
-      } else {
-        prevHandler?.(pkt);
-      }
-    };
-
-    transport!.writePacket(packet);
+  return transport.sendCommand({
+    packet,
+    matches: (response: RawPacket) => response.length > 0 && (response[0] === packet[0] || response[0] === 0),
+    decode: <T>(res: RawPacket) => res as unknown as T,
+    resolve: () => {},
+    reject: () => {},
   });
-
-  return result;
 }
