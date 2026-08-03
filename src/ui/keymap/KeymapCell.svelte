@@ -18,13 +18,19 @@
       : 'text-slate-700',
   );
 
-  function handleClick() {
-    setSelectedCell({ layer, row, col });
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
+    }
   }
 </script>
 
 <button
+  id={`cell-${layer}-${row}-${col}`}
   onclick={handleClick}
+  onkeydown={handleKeydown}
+  tabindex={isSelected ? 0 : -1}
   title="{fullLabel} (0x{code.toString(16).toUpperCase().padStart(4, '0')})"
   class="flex items-center justify-center text-[11px] font-mono w-full h-full rounded-lg
          bg-white border border-slate-200 shadow-sm

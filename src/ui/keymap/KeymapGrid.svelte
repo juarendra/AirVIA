@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { getDefinition, getActiveLayer, getSyncPhase, getSyncProgress, getPendingChanges } from '../../store/app.svelte';
+  import { getDefinition, getActiveLayer, getSyncPhase, getSyncProgress, getPendingChanges, getSelectedCell, setSelectedCell } from '../../store/app.svelte';
   import KeymapCell from './KeymapCell.svelte';
 
   const def = $derived(getDefinition());
   const activeLayer = $derived(getActiveLayer());
+  const selected = $derived(getSelectedCell());
   const CELL = 52;
 
   const positions = $derived(() => {
@@ -25,11 +26,67 @@
       position: 'relative',
     };
   });
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (!def || !selected) return;
+    
+    // Find index of currently selected key
+    const currentIndex = def.layouts.keymap.findIndex(k => k.row === selected.row && k.col === selected.col);
+    if (currentIndex === -1) return;
+
+    const currentKey = def.layouts.keymap[currentIndex];
+    
+    let nextKey;
+
+    // Ponytail: Simple spatial navigation by bounding box intersection/closest center
+    // Fall back to DOM array order if simple geometry is too fuzzy, but let's just use array index offsets for simplicity if matrix is roughly linear
+    // Actually, matrix row/col might not perfectly align with visual layout. 
+    // Best effort mapping: 
+    switch (e.key) {
+      case 'ArrowRight':
+        nextKey = def.layouts.keymap[currentIndex + 1];
+        break;
+      case 'ArrowLeft':
+        nextKey = def.layouts.keymap[currentIndex - 1];
+        break;
+      case 'ArrowUp':
+        // find nearest key above
+        nextKey = def.layouts.keymap.slice().sort((a,b) => {
+          const dyA = a.y - (currentKey.y - 1);
+          const dxA = a.x - currentKey.x;
+          const dyB = b.y - (currentKey.y - 1);
+          const dxB = b.x - currentKey.x;
+          return (dxA*dxA + dyA*dyA) - (dxB*dxB + dyB*dyB);
+        }).find(k => k.y < currentKey.y);
+        break;
+      case 'ArrowDown':
+        nextKey = def.layouts.keymap.slice().sort((a,b) => {
+          const dyA = a.y - (currentKey.y + 1);
+          const dxA = a.x - currentKey.x;
+          const dyB = b.y - (currentKey.y + 1);
+          const dxB = b.x - currentKey.x;
+          return (dxA*dxA + dyA*dyA) - (dxB*dxB + dyB*dyB);
+        }).find(k => k.y > currentKey.y);
+        break;
+      default:
+        return;
+    }
+
+    if (nextKey) {
+      e.preventDefault();
+      setSelectedCell({ layer: selected.layer, row: nextKey.row, col: nextKey.col });
+      setTimeout(() => {
+        const el = document.getElementById(`cell-${selected.layer}-${nextKey.row}-${nextKey.col}`);
+        if (el) el.focus();
+      }, 0);
+    }
+  }
 </script>
 
 {#if def}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="p-4 overflow-auto relative" style="max-height: calc(100vh - 200px)">
+  <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+  <div class="p-4 overflow-auto relative" style="max-height: calc(100vh - 200px)" onkeydown={handleKeydown} tabindex="0">
     {#if getSyncPhase() !== 'ready'}
       <div class="absolute inset-0 bg-white/60 flex items-center justify-center z-10 rounded-lg">
         <span class="text-slate-500 font-medium text-sm">
