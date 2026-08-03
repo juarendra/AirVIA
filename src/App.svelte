@@ -131,18 +131,6 @@
         const def = parseV3Definition(reader.result as string);
         setDefinition(def);
 
-        const rows = def.matrix.rows;
-        const cols = def.matrix.cols;
-        const keyCount = rows * cols;
-        // ponytail: hardcoded 4 layers until protocol response sets real count
-        setLayerCount(4);
-        setKeymap(new Array(4 * keyCount).fill(0));
-
-        if (def.encoders) {
-          setEncoderCount(def.encoders);
-          setEncoderMap(new Array(4 * def.encoders * 2).fill(0));
-        }
-
         if (transport) {
           // Changed def while connected, force disconnect to re-verify matrix
           toast('Definition changed, disconnecting to re-sync', 'error');
