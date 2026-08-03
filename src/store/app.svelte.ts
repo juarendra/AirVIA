@@ -10,17 +10,17 @@ let activeTab = $state<string>('keymap');
 let keymap = $state<number[]>([]);
 let layerCount = $state<number>(0);
 let encoderCount = $state<number>(0);
-let encoderMap = $state<number[]>([]);
-let macroCount = $state<number>(0);
-let macroBytes = $state<number>(0);
-let macroBuffer = $state<number[]>([]);
-let layoutOptions = $state<number>(0);
+let encoderMap = $state<number[] | null>(null);
+let macroCount = $state<number | null>(null);
+let macroBytes = $state<number | null>(null);
+let macroBuffer = $state<number[] | null>(null);
+let layoutOptions = $state<number | null>(null);
 
-let brightness = $state<number>(128);
-let effect = $state<number>(0);
-let speed = $state<number>(3);
-let hue = $state<number>(0);
-let saturation = $state<number>(255);
+let brightness = $state<number | null>(null);
+let effect = $state<number | null>(null);
+let speed = $state<number | null>(null);
+let hue = $state<number | null>(null);
+let saturation = $state<number | null>(null);
 
 export type SaveState = 'clean' | 'dirty' | 'saving' | 'saved' | 'failed';
 
@@ -76,23 +76,31 @@ export function setLayerCount(n: number) { layerCount = n; }
 export function getEncoderCount(): number { return encoderCount; }
 export function setEncoderCount(n: number) { encoderCount = n; }
 
-export function getEncoderMap(): number[] { return encoderMap; }
-export function setEncoderMap(em: number[]) { encoderMap = em; }
+export function getEncoderMap(): number[] | null { return encoderMap; }
+export function setEncoderMap(em: number[] | null) { encoderMap = em; }
 
-export function getMacroCount(): number { return macroCount; }
-export function setMacroCount(n: number) { macroCount = n; }
+export function getMacroCount(): number | null { return macroCount; }
+export function setMacroCount(n: number | null) { macroCount = n; }
 
-export function getMacroBytes(): number { return macroBytes; }
-export function setMacroBytes(n: number) { macroBytes = n; }
+export function getMacroBytes(): number | null { return macroBytes; }
+export function setMacroBytes(n: number | null) { macroBytes = n; }
 
-export function getMacroBuffer(): number[] { return macroBuffer; }
-export function setMacroBuffer(buf: number[]) { macroBuffer = buf; }
+export function getMacroBuffer(): number[] | null { return macroBuffer; }
+export function setMacroBuffer(buf: number[] | null) { macroBuffer = buf; }
 
-export function getLayoutOptions(): number { return layoutOptions; }
-export function setLayoutOptions(opts: number) { layoutOptions = opts; }
+export function getLayoutOptions(): number | null { return layoutOptions; }
+export function setLayoutOptions(opts: number | null) { layoutOptions = opts; }
 
-export function getLighting(): { brightness: number; effect: number; speed: number; hue: number; saturation: number } {
-  return { brightness, effect, speed, hue, saturation };
+export function getLighting(): { brightness: number; effect: number; speed: number; hue: number; saturation: number } | null {
+  if (brightness === null) return null;
+  return { brightness, effect: effect!, speed: speed!, hue: hue!, saturation: saturation! };
+}
+export function setLighting(val: { brightness: number; effect: number; speed: number; hue: number; saturation: number } | null) {
+  if (val === null) {
+    brightness = null; effect = null; speed = null; hue = null; saturation = null;
+  } else {
+    brightness = val.brightness; effect = val.effect; speed = val.speed; hue = val.hue; saturation = val.saturation;
+  }
 }
 export function setLightingBrightness(v: number) { brightness = v; }
 export function setLightingEffect(v: number) { effect = v; }
@@ -141,9 +149,11 @@ export function setKeycodeAt(layer: number, row: number, col: number, code: numb
 }
 
 export function getEncoderKeycode(layer: number, enc: number, cw: boolean): number {
-  return encoderMap[layer * encoderCount * 2 + enc * 2 + (cw ? 1 : 0)] ?? 0;
+  return encoderMap?.[layer * encoderCount * 2 + enc * 2 + (cw ? 1 : 0)] ?? 0;
 }
 
 export function setEncoderKeycode(layer: number, enc: number, cw: boolean, code: number): void {
-  encoderMap[layer * encoderCount * 2 + enc * 2 + (cw ? 1 : 0)] = code;
+  if (encoderMap) {
+    encoderMap[layer * encoderCount * 2 + enc * 2 + (cw ? 1 : 0)] = code;
+  }
 }

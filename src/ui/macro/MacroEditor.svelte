@@ -3,9 +3,10 @@
 
   let selectedSlot = $state(0);
 
-  const count = $derived(getMacroCount());
-  const totalBytes = $derived(getMacroBytes());
-  const buffer = $derived(getMacroBuffer());
+  const available = $derived(getMacroCount() !== null);
+  const count = $derived(getMacroCount() ?? 0);
+  const totalBytes = $derived(getMacroBytes() ?? 0);
+  const buffer = $derived(getMacroBuffer() ?? []);
 
   function hexByte(b: number): string {
     return b.toString(16).padStart(2, '0').toUpperCase();
@@ -27,7 +28,11 @@
     {count} macro{count !== 1 ? 's' : ''} &middot; {totalBytes} bytes total
   </div>
 
-  {#if count === 0}
+  {#if !available}
+    <div class="flex-1 flex items-center justify-center">
+      <p class="text-slate-400 text-sm">Macros are not supported by this device</p>
+    </div>
+  {:else if count === 0}
     <div class="flex-1 flex items-center justify-center">
       <p class="text-slate-400 text-sm">No macros defined in firmware</p>
     </div>

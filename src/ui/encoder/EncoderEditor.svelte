@@ -11,6 +11,7 @@
 
   const encoderCount = $derived(getEncoderCount());
   const activeLayer = $derived(getActiveLayer());
+  const available = $derived(getEncoderMap() !== null);
 
   const categories: KeycodeCategory[] = ['basic', 'modifier', 'layer', 'boot', 'media', 'system'];
 
@@ -53,7 +54,9 @@
 <div class="p-4">
   <h3 class="text-base font-semibold text-slate-700 mb-3">Encoder Assignment — Layer {activeLayer}</h3>
 
-  {#if encoderCount === 0}
+  {#if !available}
+    <p class="text-slate-400 text-sm italic">Encoders are not supported by this device</p>
+  {:else if encoderCount === 0}
     <p class="text-slate-400 text-sm italic">No encoders defined in V3 definition</p>
   {:else}
     <div class="space-y-3">

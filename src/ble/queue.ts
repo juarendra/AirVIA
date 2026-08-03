@@ -34,6 +34,14 @@ export class PacketQueue {
     this.written = true;
   }
 
+  handleError(error: Error): boolean {
+    if (!this.current) return false;
+    this.current.reject(error);
+    this.current = null;
+    this.written = false;
+    return true;
+  }
+
   handleResponse(response: RawPacket): boolean {
     if (!this.current) return false;
 
