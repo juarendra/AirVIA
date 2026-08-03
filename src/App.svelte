@@ -12,6 +12,7 @@
   import DeviceActions from './ui/device/DeviceActions.svelte';
   import Toast from './ui/shared/Toast.svelte';
   import BrowserCheck from './ui/shared/BrowserCheck.svelte';
+  import ProfileManager from './ui/profile/ProfileManager.svelte';
   import { toast } from './ui/shared/Toast.svelte';
 
   import { BLETransport } from './ble/transport';
@@ -178,9 +179,12 @@
     ondragleave={handleDragLeave}
   >
     <!-- Sidebar for Desktop, Top for mobile -->
-    <aside class="w-full md:w-64 bg-surface-dark border-r border-surface-raised flex flex-col">
-      <ConnectBar onConnect={handleConnect} onDisconnect={handleDisconnect} />
-      <TabBar />
+    <aside class="w-full md:w-64 bg-surface-dark border-r border-surface-raised flex flex-col justify-between">
+      <div>
+        <ConnectBar onConnect={handleConnect} onDisconnect={handleDisconnect} />
+        <TabBar />
+      </div>
+      <ProfileManager />
     </aside>
 
     <!-- Main Editor Area -->
