@@ -172,7 +172,7 @@
 <BrowserCheck>
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
-    class="h-screen flex flex-col bg-slate-50 text-slate-700"
+    class="h-[100dvh] flex flex-col bg-slate-50 text-slate-700"
     ondrop={handleDrop}
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}

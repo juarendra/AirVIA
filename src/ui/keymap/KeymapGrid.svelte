@@ -86,7 +86,7 @@
 {#if def}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-  <div class="p-4 overflow-auto relative" style="max-height: calc(100vh - 200px)" onkeydown={handleKeydown} tabindex="0">
+  <div class="p-4 overflow-x-auto min-w-max relative" style="max-height: calc(100vh - 200px)" onkeydown={handleKeydown} tabindex="0">
     {#if getSyncPhase() !== 'ready'}
       <div class="absolute inset-0 bg-white/60 flex items-center justify-center z-10 rounded-lg">
         <span class="text-slate-500 font-medium text-sm">
