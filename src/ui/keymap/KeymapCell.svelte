@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { keycodeAt, getKeycodeLabel, getSelectedCell, setSelectedCell } from '../../store/app.svelte';
+  import { keycodeAt, getKeycodeLabel, getSelectedTarget, setSelectedTarget } from '../../store/app.svelte';
 
   let { layer, row, col }: { layer: number; row: number; col: number } = $props();
 
   const code = $derived(keycodeAt(layer, row, col));
   const fullLabel = $derived(getKeycodeLabel(code));
   const displayLabel = $derived(fullLabel.replace(/^KC_/, ''));
-  const selected = $derived(getSelectedCell());
+  const selected = $derived(getSelectedTarget());
 
   const isSelected = $derived(
-    selected !== null && selected.layer === layer && selected.row === row && selected.col === col,
+    selected !== null && selected.type === 'key' && selected.layer === layer && selected.row === row && selected.col === col,
   );
 
   const colorClass = $derived(
@@ -21,8 +21,12 @@
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      handleClick();
+      setSelectedTarget({ type: 'key', layer, row, col });
     }
+  }
+
+  function handleClick() {
+    setSelectedTarget({ type: 'key', layer, row, col });
   }
 </script>
 

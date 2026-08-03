@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { getDefinition, getActiveLayer, getSyncPhase, getSyncProgress, getPendingChanges, getSelectedCell, setSelectedCell } from '../../store/app.svelte';
+  import { getDefinition, getActiveLayer, getSyncPhase, getSyncProgress, getPendingChanges, getSelectedTarget, setSelectedTarget } from '../../store/app.svelte';
   import KeymapCell from './KeymapCell.svelte';
 
   const def = $derived(getDefinition());
   const activeLayer = $derived(getActiveLayer());
-  const selected = $derived(getSelectedCell());
+  const selected = $derived(getSelectedTarget());
   const CELL = 52;
 
   const positions = $derived(() => {
@@ -28,7 +28,7 @@
   });
 
   function handleKeydown(e: KeyboardEvent) {
-    if (!def || !selected) return;
+    if (!def || !selected || selected.type !== 'key') return;
     
     // Find index of currently selected key
     const currentIndex = def.layouts.keymap.findIndex(k => k.row === selected.row && k.col === selected.col);
@@ -74,7 +74,7 @@
 
     if (nextKey) {
       e.preventDefault();
-      setSelectedCell({ layer: selected.layer, row: nextKey.row, col: nextKey.col });
+      setSelectedTarget({ type: 'key', layer: selected.layer, row: nextKey.row, col: nextKey.col });
       setTimeout(() => {
         const el = document.getElementById(`cell-${selected.layer}-${nextKey.row}-${nextKey.col}`);
         if (el) el.focus();

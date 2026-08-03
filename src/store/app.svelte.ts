@@ -38,7 +38,11 @@ let deviceName = $state('');
 let protocolVersion = $state(0);
 let firmwareVersion = $state(0);
 
-let selectedCell = $state<{ layer: number; row: number; col: number } | null>(null);
+export type SelectedTarget =
+  | { type: 'key'; layer: number; row: number; col: number }
+  | { type: 'encoder'; layer: number; id: number; cw: boolean };
+
+let selectedTarget = $state<SelectedTarget | null>(null);
 
 let packetLog = $state<Array<{ dir: 'tx' | 'rx'; packet: RawPacket }>>([]);
 
@@ -154,8 +158,8 @@ export function setDeviceName(n: string) { deviceName = n; }
 export function setProtocolVersion(v: number) { protocolVersion = v; }
 export function setFirmwareVersion(v: number) { firmwareVersion = v; }
 
-export function getSelectedCell(): { layer: number; row: number; col: number } | null { return selectedCell; }
-export function setSelectedCell(cell: { layer: number; row: number; col: number } | null) { selectedCell = cell; }
+export function getSelectedTarget(): SelectedTarget | null { return selectedTarget; }
+export function setSelectedTarget(target: SelectedTarget | null) { selectedTarget = target; }
 
 export function getPacketLog(): Array<{ dir: 'tx' | 'rx'; packet: RawPacket }> { return packetLog; }
 export function addPacketLog(dir: 'tx' | 'rx', pkt: RawPacket) {

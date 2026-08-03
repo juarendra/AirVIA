@@ -1,6 +1,6 @@
 <script lang="ts">
   import Modal from '../shared/Modal.svelte';
-  import { getSelectedCell, setSelectedCell, setKeycodeAt, markDirty } from '../../store/app.svelte';
+  import { getSelectedTarget, setSelectedTarget, setKeycodeAt, setEncoderKeycode, markDirty } from '../../store/app.svelte';
   import { KEYCODES_BY_CATEGORY, CATEGORY_LABELS, type KeycodeEntry, type KeycodeCategory } from '../../core/keycodes';
   import { Protocol } from '../../core/protocol';
   import { sendViaCommand } from '../../ble/dispatch';
@@ -8,7 +8,7 @@
   let search = $state('');
   let activeCategory = $state<KeycodeCategory>('basic');
 
-  const selectedCell = $derived(getSelectedCell());
+  const selectedTarget = $derived(getSelectedTarget());
 
   const allEntries = $derived(Object.values(KEYCODES_BY_CATEGORY).flat());
 
@@ -28,16 +28,21 @@
   const categories = Object.keys(CATEGORY_LABELS) as KeycodeCategory[];
 
   async function select(entry: KeycodeEntry) {
-    const cell = selectedCell;
-    if (!cell) return;
+    const target = selectedTarget;
+    if (!target) return;
     
     // Close modal first for responsiveness
-    setSelectedCell(null);
+    setSelectedTarget(null);
     search = '';
     
     try {
-      await sendViaCommand(Protocol.setKeycode(cell.layer, cell.row, cell.col, entry.code >> 8, entry.code & 0xFF));
-      setKeycodeAt(cell.layer, cell.row, cell.col, entry.code);
+      if (target.type === 'key') {
+        await sendViaCommand(Protocol.setKeycode(target.layer, target.row, target.col, entry.code >> 8, entry.code & 0xFF));
+        setKeycodeAt(target.layer, target.row, target.col, entry.code);
+      } else if (target.type === 'encoder') {
+        await sendViaCommand(Protocol.setEncoderKeycode(target.layer, target.id, target.cw ? 1 : 0, entry.code >> 8, entry.code & 0xFF));
+        setEncoderKeycode(target.layer, target.id, target.cw, entry.code);
+      }
       markDirty();
     } catch (err) {
       console.error('Failed to update keycode', err);
@@ -45,7 +50,7 @@
   }
 
   function close() {
-    setSelectedCell(null);
+    setSelectedTarget(null);
     search = '';
   }
 
@@ -59,7 +64,7 @@
   }
 </script>
 
-<Modal show={selectedCell !== null} title="Keycode Picker" onclose={close}>
+<Modal show={selectedTarget !== null} title="Keycode Picker" onclose={close}>
   <div class="flex flex-col gap-3">
     <input
       type="text"
