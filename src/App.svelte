@@ -172,36 +172,41 @@
 <BrowserCheck>
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
-    class="h-[100dvh] flex flex-col bg-slate-50 text-slate-700"
+    class="h-[100dvh] flex flex-col md:flex-row bg-bg-dark text-text-primary"
     ondrop={handleDrop}
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
   >
-    <ConnectBar onConnect={handleConnect} onDisconnect={handleDisconnect} />
+    <!-- Sidebar for Desktop, Top for mobile -->
+    <aside class="w-full md:w-64 bg-surface-dark border-r border-surface-raised flex flex-col">
+      <ConnectBar onConnect={handleConnect} onDisconnect={handleDisconnect} />
+      <TabBar />
+    </aside>
 
-    <TabBar />
-
-    {#if activeTab === 'keymap' || activeTab === 'encoder'}
-      <LayerSelector />
-    {/if}
-
-    <div class="flex-1 min-h-0">
-      {#if activeTab === 'keymap'}
-        <KeymapGrid />
-      {:else if activeTab === 'encoder'}
-        <EncoderEditor />
-      {:else if activeTab === 'macros'}
-        <MacroEditor />
-      {:else if activeTab === 'lighting'}
-        <LightingPanel />
-    {:else if activeTab === 'layout'}
-      <LayoutOptions />
-    {:else if activeTab === 'actions'}
-      <DeviceActions />
-    {:else if activeTab === 'console'}
-        <PacketLog />
+    <!-- Main Editor Area -->
+    <main class="flex-1 flex flex-col min-w-0">
+      {#if activeTab === 'keymap' || activeTab === 'encoder'}
+        <LayerSelector />
       {/if}
-    </div>
+
+      <div class="flex-1 min-h-0">
+        {#if activeTab === 'keymap'}
+          <KeymapGrid />
+        {:else if activeTab === 'encoder'}
+          <EncoderEditor />
+        {:else if activeTab === 'macros'}
+          <MacroEditor />
+        {:else if activeTab === 'lighting'}
+          <LightingPanel />
+        {:else if activeTab === 'layout'}
+          <LayoutOptions />
+        {:else if activeTab === 'actions'}
+          <DeviceActions />
+        {:else if activeTab === 'console'}
+          <PacketLog />
+        {/if}
+      </div>
+    </main>
 
     {#if dragOver}
       <div class="fixed inset-0 bg-black/20 border-2 border-dashed border-blue-400 z-40 pointer-events-none flex items-center justify-center">

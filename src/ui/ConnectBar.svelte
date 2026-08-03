@@ -58,45 +58,45 @@
   const state = $derived(getConnectionState());
 </script>
 
-<div class="bg-white border-b border-slate-200 px-4 py-2 flex items-center justify-between">
+<div class="bg-surface-dark border-b border-surface-raised px-4 py-3 flex items-center justify-between">
   <div class="flex items-center gap-3">
-    <span class="text-lg font-bold text-blue-600">AirVIA</span>
+    <span class="text-lg font-bold text-accent-cyan tracking-wider">AirVIA</span>
     <div class="flex items-center gap-1.5">
-      <span class="inline-block w-2.5 h-2.5 rounded-full {stateDot[state]}" aria-label={state}></span>
-      <span class="text-sm text-slate-500 px-3 py-0.5 rounded-full bg-slate-100 text-xs font-medium">{stateLabel(state)}</span>
+      <span class="inline-block w-2 h-2 rounded-full {stateDot[state]}" aria-label={state}></span>
+      <span class="text-xs text-text-muted px-2 py-0.5 rounded-full bg-surface-elevated font-medium">{stateLabel(state)}</span>
     </div>
     {#if state === 'connected' || getSyncPhase() === 'syncing' || getSyncPhase() === 'ready'}
-      <span class="text-xs text-slate-400 ml-1">{getDeviceName() || 'VIA Keyboard'}</span>
+      <span class="text-xs text-text-primary ml-1">{getDeviceName() || 'VIA Keyboard'}</span>
       {#if getSyncPhase() === 'syncing'}
-        <span class="text-xs text-blue-500 animate-pulse">{getSyncProgress()}</span>
+        <span class="text-xs text-accent-blue animate-pulse">{getSyncProgress()}</span>
       {:else if getSyncPhase() === 'ready'}
-        <span class="text-xs text-green-600">Ready</span>
+        <span class="text-xs text-accent-green">Ready</span>
       {:else if getSyncPhase() === 'error'}
-        <span class="text-xs text-red-500">{getSyncProgress()}</span>
+        <span class="text-xs text-accent-red">{getSyncProgress()}</span>
       {/if}
     {/if}
   </div>
 
   <div class="flex items-center gap-3">
     {#if error}
-      <span class="text-sm text-red-400 max-w-64 truncate" title={error}>{error}</span>
+      <span class="text-sm text-accent-red max-w-64 truncate" title={error}>{error}</span>
     {/if}
 
     {#if saveState === 'dirty'}
       <button onclick={handleSave}
         disabled={state !== 'connected'}
-        class="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium shadow-sm hover:shadow-md hover:bg-blue-700 disabled:opacity-50 transition-all">
-        Save Changes
+        class="px-3 py-1.5 bg-accent-blue text-white rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-colors">
+        Save
       </button>
     {:else if saveState === 'saving'}
-      <span class="text-sm text-slate-500">Saving...</span>
+      <span class="text-sm text-text-muted">Saving...</span>
     {:else if saveState === 'saved'}
-      <span class="text-sm text-green-500">&#10003; Saved</span>
+      <span class="text-sm text-accent-green">&#10003;</span>
     {:else if saveState === 'failed'}
       <button onclick={handleSave}
         disabled={state !== 'connected'}
-        class="text-sm text-red-500 hover:underline disabled:opacity-50">
-        Save failed &mdash; tap to retry
+        class="text-sm text-accent-red hover:underline disabled:opacity-50">
+        Retry
       </button>
     {/if}
 
@@ -104,18 +104,18 @@
       <button
         onclick={handleConnect}
         disabled={connecting}
-        class="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-full text-sm font-medium text-white shadow-sm hover:shadow-md transition-all"
+        class="flex items-center justify-center p-2 bg-surface-raised hover:bg-surface-elevated disabled:opacity-50 rounded-lg text-text-primary transition-colors"
+        title="Connect"
       >
         <Icon name="bluetooth" class="w-4 h-4" />
-        Connect
       </button>
     {:else}
       <button
         onclick={handleDisconnect}
-        class="flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-full text-sm font-medium shadow-sm transition-all"
+        class="flex items-center justify-center p-2 bg-surface-raised text-text-muted hover:text-text-primary hover:bg-surface-elevated rounded-lg transition-colors"
+        title="Disconnect"
       >
         <Icon name="disconnect" class="w-4 h-4" />
-        Disconnect
       </button>
     {/if}
   </div>

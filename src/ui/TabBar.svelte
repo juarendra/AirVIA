@@ -16,16 +16,16 @@
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
-<nav role="tablist" class="bg-slate-100 mx-4 my-2 rounded-full p-1 flex overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden">
+<nav role="tablist" class="mx-4 my-2 flex md:flex-col overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden">
   {#each tabs as tab}
     <button
       role="tab"
       aria-selected={active === tab.id}
       onclick={() => setActiveTab(tab.id)}
-      class="flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-medium transition-all
+      class="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-colors
              {active === tab.id
-               ? 'bg-white text-slate-800 shadow-sm'
-               : 'text-slate-500 hover:text-slate-700'}"
+               ? 'bg-surface-raised text-accent-cyan'
+               : 'text-text-muted hover:text-text-primary hover:bg-surface-elevated'}"
     >
       <Icon name={tab.icon} class="w-4 h-4" />
       {tab.label}
