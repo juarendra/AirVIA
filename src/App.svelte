@@ -113,6 +113,10 @@
   }
 
   function readDefinitionFile(file: File) {
+    if (file.size > 1024 * 1024) {
+      toast('Definition file too large', 'error');
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       try {
@@ -130,8 +134,12 @@
           setEncoderCount(def.encoders);
           setEncoderMap(new Array(4 * def.encoders * 2).fill(0));
         }
-      } catch {
-        // ponytail: silent skip, wire toast if UX demands
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          toast(`Invalid definition: ${e.message}`, 'error');
+        } else {
+          toast('Invalid definition', 'error');
+        }
       }
     };
     reader.readAsText(file);

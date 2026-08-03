@@ -46,8 +46,8 @@ export function parseV3Definition(json: string): V3Definition {
   assert(layouts != null && typeof layouts === 'object', 'Missing "layouts"');
   const l = layouts as Record<string, unknown>;
   assert(
-    Array.isArray(l.keymap) && l.keymap.length > 0,
-    'layouts.keymap must be non-empty array',
+    Array.isArray(l.keymap) && l.keymap.length > 0 && l.keymap.length <= m.rows * m.cols,
+    'layouts.keymap must be non-empty array and length cannot exceed max keys (rows * cols)',
   );
 
   const rows = m.rows as number;
@@ -58,15 +58,15 @@ export function parseV3Definition(json: string): V3Definition {
     const p = (l.keymap as unknown[])[i];
     assert(p != null && typeof p === 'object', `keymap[${i}] must be an object`);
     const kp = p as Record<string, unknown>;
-    assert(typeof kp.x === 'number', `keymap[${i}].x must be a number`);
-    assert(typeof kp.y === 'number', `keymap[${i}].y must be a number`);
+    assert(typeof kp.x === 'number' && Number.isFinite(kp.x), `keymap[${i}].x must be a finite number`);
+    assert(typeof kp.y === 'number' && Number.isFinite(kp.y), `keymap[${i}].y must be a finite number`);
     assert(
-      kp.w === undefined || typeof kp.w === 'number',
-      `keymap[${i}].w must be a number if present`,
+      kp.w === undefined || (typeof kp.w === 'number' && Number.isFinite(kp.w) && kp.w > 0),
+      `keymap[${i}].w must be a finite number greater than 0 if present`,
     );
     assert(
-      kp.h === undefined || typeof kp.h === 'number',
-      `keymap[${i}].h must be a number if present`,
+      kp.h === undefined || (typeof kp.h === 'number' && Number.isFinite(kp.h) && kp.h > 0),
+      `keymap[${i}].h must be a finite number greater than 0 if present`,
     );
     assert(
       kp.r === undefined || typeof kp.r === 'number',
@@ -105,6 +105,7 @@ export function parseV3Definition(json: string): V3Definition {
     } else {
       row = Math.floor(i / cols);
       col = i % cols;
+      assert(row < rows, `implicit matrix coordinate [${row},${col}] at keymap index ${i} out of bounds [0, ${rows - 1}]`);
     }
     const key = row * cols + col;
     assert(!seen.has(key), `Duplicate matrix coordinate [${row},${col}] at keymap index ${i}`);
