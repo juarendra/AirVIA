@@ -3,7 +3,7 @@
   import { getSelectedCell, setSelectedCell, setKeycodeAt, markDirty } from '../../store/app.svelte';
   import { KEYCODES_BY_CATEGORY, CATEGORY_LABELS, type KeycodeEntry, type KeycodeCategory } from '../../core/keycodes';
   import { Protocol } from '../../core/protocol';
-  import { sendPacket } from '../../ble/dispatch';
+  import { sendViaCommand } from '../../ble/dispatch';
 
   let search = $state('');
   let activeCategory = $state<KeycodeCategory>('basic');
@@ -27,15 +27,21 @@
 
   const categories = Object.keys(CATEGORY_LABELS) as KeycodeCategory[];
 
-  function select(entry: KeycodeEntry) {
+  async function select(entry: KeycodeEntry) {
     const cell = selectedCell;
     if (!cell) return;
-    setKeycodeAt(cell.layer, cell.row, cell.col, entry.code);
-    markDirty();
-    sendPacket(Protocol.setKeycode(cell.layer, cell.row, cell.col, entry.code >> 8, entry.code & 0xFF))
-      .catch(err => console.error('send failed', err));
+    
+    // Close modal first for responsiveness
     setSelectedCell(null);
     search = '';
+    
+    try {
+      await sendViaCommand(Protocol.setKeycode(cell.layer, cell.row, cell.col, entry.code >> 8, entry.code & 0xFF));
+      setKeycodeAt(cell.layer, cell.row, cell.col, entry.code);
+      markDirty();
+    } catch (err) {
+      console.error('Failed to update keycode', err);
+    }
   }
 
   function close() {
