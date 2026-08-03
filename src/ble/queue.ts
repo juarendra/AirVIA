@@ -34,15 +34,24 @@ export class PacketQueue {
     this.written = true;
   }
 
+  handleError(error: Error): boolean {
+    if (!this.current) return false;
+    this.current.reject(error);
+    this.current = null;
+    this.written = false;
+    return true;
+  }
+
   handleResponse(response: RawPacket): boolean {
     if (!this.current) return false;
-    if (!this.current.matches(response)) return false;
 
     if (isErrorResponse(response)) {
       this.current.reject(new Error(`VIA error: command 0x${this.current.packet[0]?.toString(16)} rejected`));
     } else {
+      if (!this.current.matches(response)) return false;
       this.current.resolve(response);
     }
+    
     this.current = null;
     this.written = false;
     return true;

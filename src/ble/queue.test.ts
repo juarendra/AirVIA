@@ -57,6 +57,26 @@ describe('PacketQueue', () => {
     expect(q.takeForSend()).toEqual(cmd(2).packet);
   });
 
+  it('exhaustion exposes next request', () => {
+    let rejected = '';
+    const r1 = cmd(1);
+    r1.reject = (e: Error) => { rejected = e.message; };
+    const r2 = cmd(2);
+
+    const q = new PacketQueue(makeConfig({ retries: 0 }));
+    q.enqueue(r1);
+    q.enqueue(r2);
+
+    q.takeForSend(); // pops r1
+    q.markSent();
+
+    expect(q.retry()).toBeNull(); // r1 exhausted
+    expect(rejected).toContain('exhausted');
+    
+    // r2 should now be available for send
+    expect(q.takeForSend()).toEqual(cmd(2).packet);
+  });
+
   it('stops after max retries', () => {
     let rejected = '';
     const r = cmd(1);
@@ -71,6 +91,24 @@ describe('PacketQueue', () => {
     expect(q.retry()).toBeNull();
     expect(rejected).toContain('exhausted');
     expect(q.takeForSend()).toBeNull();
+  });
+
+  it('rejects 0xFF error responses', () => {
+    let rejected = '';
+    const r = cmd(1);
+    r.reject = (e: Error) => { rejected = e.message; };
+
+    const q = new PacketQueue(makeConfig());
+    q.enqueue(r);
+    q.takeForSend();
+    
+    // Simulate 0xFF error response packet
+    const errResp = new Array(32).fill(0);
+    errResp[0] = 0xFF; // Error indicator
+    errResp[1] = 1;    // Original command that failed
+    
+    expect(q.handleResponse(errResp)).toBe(true);
+    expect(rejected).toContain('VIA error: command 0x1 rejected');
   });
 
   it('rejects enqueue when full', () => {

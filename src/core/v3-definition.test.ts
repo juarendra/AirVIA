@@ -172,6 +172,72 @@ describe('parseV3Definition', () => {
     }))).toThrow('matrix.rows exceeds max 32');
   });
 
+  it('rejects non-finite values in keymap', () => {
+    expect(() => parseV3Definition(validJson({
+      layouts: {
+        keymap: [
+          { x: Infinity, y: 0 }
+        ]
+      }
+    }))).toThrow('must be a finite number');
+
+    expect(() => parseV3Definition(validJson({
+      layouts: {
+        keymap: [
+          { x: 0, y: NaN }
+        ]
+      }
+    }))).toThrow('must be a finite number');
+
+    expect(() => parseV3Definition(validJson({
+      layouts: {
+        keymap: [
+          { x: 0, y: 0, w: Infinity }
+        ]
+      }
+    }))).toThrow('must be a finite number');
+  });
+
+  it('rejects negative or zero dimensions', () => {
+    expect(() => parseV3Definition(validJson({
+      layouts: {
+        keymap: [
+          { x: 0, y: 0, w: 0 }
+        ]
+      }
+    }))).toThrow('greater than 0');
+
+    expect(() => parseV3Definition(validJson({
+      layouts: {
+        keymap: [
+          { x: 0, y: 0, h: -1 }
+        ]
+      }
+    }))).toThrow('greater than 0');
+  });
+
+  it('rejects out of bounds implicit matrix bounds', () => {
+    expect(() => parseV3Definition(validJson({
+      matrix: { rows: 1, cols: 2 },
+      layouts: {
+        keymap: [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+          { x: 2, y: 0 }
+        ]
+      }
+    }))).toThrow('max keys');
+  });
+
+  it('rejects excessive key count', () => {
+    expect(() => parseV3Definition(validJson({
+      matrix: { rows: 2, cols: 2 },
+      layouts: {
+        keymap: keymapOfLength(32, 32, (r, c) => ({ x: c, y: r }))
+      }
+    }))).toThrow('cannot exceed max');
+  });
+
   it('rejects oversized matrix cols', () => {
     expect(() => parseV3Definition(validJson({
       matrix: { rows: 2, cols: 33 },

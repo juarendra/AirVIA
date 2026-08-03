@@ -61,10 +61,17 @@ describe('BLETransport', () => {
     expect(lastState).toBe('disconnected');
   });
 
-  it('send enqueues packet', async () => {
+  it('sendCommand enqueues request', async () => {
     const t = new BLETransport();
     const pkt = new Array(32).fill(0);
     pkt[0] = 0x01;
-    await t.send(pkt);
+    // Don't wait for it since it won't resolve while disconnected
+    t.sendCommand({
+      packet: pkt,
+      matches: () => true,
+      decode: <T>(res: RawPacket) => res as unknown as T,
+      resolve: () => {},
+      reject: () => {}
+    }).catch(() => {});
   });
 });

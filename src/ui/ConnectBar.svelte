@@ -84,7 +84,8 @@
 
     {#if saveState === 'dirty'}
       <button onclick={handleSave}
-        class="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium shadow-sm hover:shadow-md hover:bg-blue-700 transition-all">
+        disabled={state !== 'connected'}
+        class="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium shadow-sm hover:shadow-md hover:bg-blue-700 disabled:opacity-50 transition-all">
         Save Changes
       </button>
     {:else if saveState === 'saving'}
@@ -93,7 +94,8 @@
       <span class="text-sm text-green-500">&#10003; Saved</span>
     {:else if saveState === 'failed'}
       <button onclick={handleSave}
-        class="text-sm text-red-500 hover:underline">
+        disabled={state !== 'connected'}
+        class="text-sm text-red-500 hover:underline disabled:opacity-50">
         Save failed &mdash; tap to retry
       </button>
     {/if}
