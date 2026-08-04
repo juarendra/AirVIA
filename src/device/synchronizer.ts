@@ -33,7 +33,7 @@ export async function synchronizeDevice(): Promise<DeviceSnapshot> {
     const expectedOffset = [(offset >>> 8) & 0xff, offset & 0xff];
     const resp = await sendViaCommand(Protocol.getKeymapBuffer(offset, expectedSize));
     
-    if (resp.length - 4 !== expectedSize || resp.length % 2 !== 0 || resp[2] !== expectedOffset[1]) {
+    if (resp.length - 4 !== expectedSize || resp.length % 2 !== 0 || resp[1] !== expectedOffset[0] || resp[2] !== expectedOffset[1]) {
       throw new Error('Invalid chunk response');
     }
 
