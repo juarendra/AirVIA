@@ -1,9 +1,9 @@
-import type { BLETransport } from './transport';
+import type { Transport } from './transport';
 import type { RawPacket } from '../core/protocol';
 
-let transport: BLETransport | null = null;
+let transport: Transport | null = null;
 
-export function setTransport(t: BLETransport | null) {
+export function setTransport(t: Transport | null) {
   transport = t;
 }
 

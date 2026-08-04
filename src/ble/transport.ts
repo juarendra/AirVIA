@@ -14,7 +14,18 @@ export type TransportState =
   | 'connected'
   | 'error';
 
-export class BLETransport {
+export interface Transport {
+  readonly state: TransportState;
+  onResponse: ((pkt: RawPacket) => void) | null;
+  onStateChange: ((s: TransportState) => void) | null;
+  writePacket(packet: RawPacket): Promise<void>;
+  connect(): Promise<void>;
+  disconnect(): Promise<void>;
+  sendCommand(request: CommandRequest): Promise<RawPacket>;
+  readInfo(): Promise<RawPacket | null>;
+}
+
+export class BLETransport implements Transport {
   onResponse: ((pkt: RawPacket) => void) | null = null;
   onStateChange: ((s: TransportState) => void) | null = null;
 
