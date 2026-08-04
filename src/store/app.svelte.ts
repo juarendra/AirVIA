@@ -86,6 +86,7 @@ export function resetDeviceState() {
   setFirmwareVersion(0);
   setLayerCount(0);
   setEncoderCount(0);
+  setEncoderMap(null);
   setMacroCount(null);
   setMacroBytes(null);
   setLayoutOptions(null);

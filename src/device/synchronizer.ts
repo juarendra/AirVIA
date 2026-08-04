@@ -58,8 +58,41 @@ export async function synchronizeDevice(): Promise<DeviceSnapshot> {
   // 3. Read encoder maps if encoders exist
   const encoderCount = def.encoders ?? 0;
   if (encoderCount > 0) {
-    // ponytail: read encoder maps via individual 0x14 commands later — bulk read needs firmware support
-    snapshot.encoders = new Array(layers * encoderCount * 2).fill(0);
+    const encoders = new Array(layers * encoderCount * 2).fill(0);
+    try {
+      // test if encoder 0 is supported
+      await sendViaCommand(Protocol.getEncoderKeycode(0, 0, 0));
+      for (let l = 0; l < layers; l++) {
+        for (let e = 0; e < encoderCount; e++) {
+          for (let cw = 0; cw < 2; cw++) {
+            const resp = await sendViaCommand(Protocol.getEncoderKeycode(l, e, cw));
+            const code = ((resp[4] ?? 0) << 8) | (resp[5] ?? 0);
+            encoders[l * encoderCount * 2 + e * 2 + cw] = code;
+          }
+        }
+      }
+      snapshot.encoders = encoders;
+    } catch {
+      // unsupported, do not fabricate
+    }
+  }
+
+  // Read lighting if supported
+  if (def.lighting !== 'none') {
+    try {
+      // test if getting backlight value is supported
+      const resp = await sendViaCommand(Protocol.getCustomValue(0x08, 0x01)); // VIA_ID_BACKLIGHT_BRIGHTNESS is 0x08, 0x01
+      // ponytail: assuming successful read means lighting is supported and returns standard values
+      snapshot.lighting = {
+        brightness: resp[4] ?? 0,
+        effect: (await sendViaCommand(Protocol.getCustomValue(0x08, 0x02)))[4] ?? 0,
+        speed: (await sendViaCommand(Protocol.getCustomValue(0x08, 0x03)))[4] ?? 0,
+        hue: (await sendViaCommand(Protocol.getCustomValue(0x08, 0x04)))[4] ?? 0,
+        saturation: (await sendViaCommand(Protocol.getCustomValue(0x08, 0x05)))[4] ?? 0
+      };
+    } catch {
+      // unsupported, do not fabricate
+    }
   }
 
   // 4. Read macro metadata
