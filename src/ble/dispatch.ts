@@ -19,12 +19,17 @@ export async function sendPacket(pkt: RawPacket): Promise<void> {
   }).catch(() => { /* fire and forget */ });
 }
 
-export async function sendViaCommand(packet: RawPacket, _timeoutMs = 5000): Promise<RawPacket> {
+export async function sendViaCommand(packet: RawPacket, timeoutMs = 1000): Promise<RawPacket> {
   if (!transport) throw new Error('Not connected');
 
   return transport.sendCommand({
     packet,
-    matches: (response: RawPacket) => response.length > 0 && (response[0] === packet[0] || response[0] === 0),
+    timeoutMs,
+    matches: (response: RawPacket) => {
+      if (response.length === 0) return false;
+      if (response[0] === 0xff) return false; // Reject error frames
+      return response[0] === packet[0] || response[0] === 0;
+    },
     decode: <T>(res: RawPacket) => res as unknown as T,
     resolve: () => {},
     reject: () => {},
