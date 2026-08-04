@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BLETransport, VIA_SERVICE_UUID, VIA_DATA_CHAR_UUID, VIA_INFO_CHAR_UUID } from './transport';
 import type { RawPacket } from '../core/protocol';
 
@@ -29,8 +29,12 @@ const mockDevice = {
 
 describe('BLETransport', () => {
   beforeEach(() => {
-    navigator.bluetooth = { requestDevice: vi.fn().mockResolvedValue(mockDevice) };
+    vi.stubGlobal('navigator', {
+      bluetooth: { requestDevice: vi.fn().mockResolvedValue(mockDevice) },
+    });
   });
+
+  afterEach(() => vi.unstubAllGlobals());
 
   it('starts disconnected', () => {
     const t = new BLETransport();
