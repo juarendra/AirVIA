@@ -42,7 +42,7 @@
             const rem = i % (rows * cols);
             const row = Math.floor(rem / cols);
             const col = rem % cols;
-            keymapDiffs.push({ layer, row, col, code: profile.keymap[i], index: i });
+            keymapDiffs.push({ layer, row, col, code: profile.keymap[i] ?? 0, index: i });
         }
     }
 
@@ -57,8 +57,8 @@
             for (let e = 0; e < encoderCount; e++) {
                 const baseIdx = l * encoderCount * 2 + e * 2;
                 if (baseIdx + 1 < profile.encoders.length) {
-                    encoderDiffs.push({ layer: l, id: e, cw: false, code: profile.encoders[baseIdx] });
-                    encoderDiffs.push({ layer: l, id: e, cw: true, code: profile.encoders[baseIdx + 1] });
+                    encoderDiffs.push({ layer: l, id: e, cw: false, code: profile.encoders[baseIdx] ?? 0 });
+                    encoderDiffs.push({ layer: l, id: e, cw: true, code: profile.encoders[baseIdx + 1] ?? 0 });
                 }
             }
         }

@@ -25,7 +25,7 @@
         }
         current = '';
       } else {
-        current += String.fromCharCode(buffer[i]);
+        current += String.fromCharCode(buffer[i] ?? 0);
       }
     }
     
@@ -37,7 +37,7 @@
 
   $effect(() => {
     if (isQmkText && macroStrings.length > selectedSlot && !isEditing) {
-      editContent = macroStrings[selectedSlot];
+      editContent = macroStrings[selectedSlot] ?? '';
     }
   });
 
