@@ -19,6 +19,18 @@ export async function synchronizeDevice(): Promise<DeviceSnapshot> {
   const def = getDefinition();
   if (!def) throw new Error('No definition loaded');
 
+  // 0. Verify Protocol Version
+  try {
+    const protoResp = await sendViaCommand(Protocol.getProtocolVersion());
+    const version = (protoResp[1]! << 8) | protoResp[2]!;
+    if (version < 0x000C) { // Ex: require VIA protocol v12/13
+      throw new Error('Unsupported VIA protocol version on device');
+    }
+  } catch (err: any) {
+    if (err.message === 'Unsupported VIA protocol version on device') throw err;
+    throw new Error('Failed to verify device compatibility');
+  }
+
   // 1. Get layer count
   const layerResp = await sendViaCommand(Protocol.getLayerCount());
   const layers = decodeLayerCount(layerResp);

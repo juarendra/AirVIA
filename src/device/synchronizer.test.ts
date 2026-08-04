@@ -16,6 +16,26 @@ vi.mock('../store/app.svelte', () => ({
   setMacroBytes: vi.fn(),
 }));
 
+describe('Device Identity Guard', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('throws an error if firmware version cannot be verified', async () => {
+    // Mock the protocol version command to return a version lower than 0x000C
+    vi.mocked(sendViaCommand).mockResolvedValueOnce([0x01, 0x00, 0x09]); // Version 9
+    
+    await expect(synchronizeDevice()).rejects.toThrow('Unsupported VIA protocol version on device');
+  });
+  
+  it('throws an error if getProtocolVersion fails entirely', async () => {
+    // Mock the protocol version command to throw an error
+    vi.mocked(sendViaCommand).mockRejectedValueOnce(new Error('Network error'));
+    
+    await expect(synchronizeDevice()).rejects.toThrow('Failed to verify device compatibility');
+  });
+});
+
 describe('synchronizeDevice', () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -30,6 +50,7 @@ describe('synchronizeDevice', () => {
   });
 
   it('fails if chunk offset is out of bounds', async () => {
+    vi.mocked(sendViaCommand).mockResolvedValueOnce([0x01, 0x00, 0x0C]); // Protocol v12
     vi.mocked(sendViaCommand).mockResolvedValueOnce([0x11, 1]); // 1 layer -> 1*2*2*2 = 8 bytes keymap
     // Send a response where offset doesn't match the expected offset.
     // The expected offset is 0, let's send 1.
@@ -38,6 +59,7 @@ describe('synchronizeDevice', () => {
   });
 
   it('fails if chunk is too long for remaining space', async () => {
+    vi.mocked(sendViaCommand).mockResolvedValueOnce([0x01, 0x00, 0x0C]); // Protocol v12
     vi.mocked(sendViaCommand).mockResolvedValueOnce([0x11, 1]); // 8 bytes keymap
     vi.mocked(sendViaCommand).mockResolvedValueOnce([
       0x12, 0x00, 0x00, 0x0A, // size 10 (0x0A), but only 8 expected total
