@@ -1,14 +1,20 @@
 <script lang="ts">
   import { exportProfileBlob, parseProfile, type KeyboardProfile } from '../../store/profile';
-  import { getKeymap, getDeviceName, setKeymap, getDefinition } from '../../store/app.svelte';
+  import { getKeymap, getDeviceName, getDefinition, getEncoderCount, getEncoderMap, getLighting, getLayoutOptions } from '../../store/app.svelte';
   import { toast } from '../shared/Toast.svelte';
+  import ProfileApplier from './ProfileApplier.svelte';
+
+  let pendingProfile = $state<KeyboardProfile | null>(null);
 
   function handleExport() {
     const profile: KeyboardProfile = {
       version: 1,
       name: getDeviceName() || 'Backup',
       timestamp: Date.now(),
-      keymap: getKeymap()
+      keymap: getKeymap(),
+      encoders: getEncoderCount() > 0 ? (getEncoderMap() || undefined) : undefined,
+      lighting: getLighting() || undefined,
+      layoutOptions: getLayoutOptions() ?? undefined
     };
     const blob = exportProfileBlob(profile);
     const url = URL.createObjectURL(blob);
@@ -23,7 +29,17 @@
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-    toast('Profile import temporarily disabled until RC Phase 6.', 'error');
+    
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        try {
+            const data = ev.target?.result as string;
+            pendingProfile = parseProfile(data);
+        } catch (err) {
+            toast('Failed to load profile', 'error');
+        }
+    };
+    reader.readAsText(file);
     input.value = '';
   }
 </script>
@@ -35,3 +51,7 @@
     <input type="file" accept=".json" onchange={handleImport} class="hidden" />
   </label>
 </div>
+
+{#if pendingProfile}
+  <ProfileApplier profile={pendingProfile} onclose={() => pendingProfile = null} />
+{/if}
