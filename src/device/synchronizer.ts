@@ -12,7 +12,7 @@ export type DeviceSnapshot = {
   encoders?: number[];
   lighting?: { brightness: number; effect: number; speed: number; hue: number; saturation: number };
   layoutOptions?: number;
-  macros?: { count: number; bytes: number };
+  macros?: { count: number; bytes: number; buffer: number[] };
 };
 
 export async function synchronizeDevice(): Promise<DeviceSnapshot> {
@@ -102,7 +102,17 @@ export async function synchronizeDevice(): Promise<DeviceSnapshot> {
     
     if (count > 0) {
       const macroSizeResp = await sendViaCommand(Protocol.getMacroBufferSize());
-      snapshot.macros = { count, bytes: decodeMacroBufferSize(macroSizeResp) };
+      const bytes = decodeMacroBufferSize(macroSizeResp);
+      
+      const buffer = [];
+      for (let offset = 0; offset < bytes; offset += 28) {
+        const expectedSize = Math.min(28, bytes - offset);
+        const resp = await sendViaCommand(Protocol.getMacroBuffer(offset, expectedSize));
+        const chunk = decodeBufferChunk(resp);
+        buffer.push(...chunk.data);
+      }
+      
+      snapshot.macros = { count, bytes, buffer };
     }
   } catch {
     // Macros may not be configured — non-fatal
