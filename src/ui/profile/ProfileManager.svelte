@@ -23,20 +23,7 @@
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        if (!getDefinition()) {
-          throw new Error('Please load a keyboard definition first');
-        }
-        const profile = parseProfile(reader.result as string);
-        setKeymap(profile.keymap);
-        toast('Profile imported', 'success');
-      } catch (err: any) {
-        toast(`Import failed: ${err.message}`, 'error');
-      }
-    };
-    reader.readAsText(file);
+    toast('Profile import temporarily disabled until RC Phase 6.', 'error');
     input.value = '';
   }
 </script>
