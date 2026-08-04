@@ -6,6 +6,7 @@ export type CommandRequest = {
   decode: <T>(response: RawPacket) => T;
   resolve: (value: unknown) => void;
   reject: (reason: Error) => void;
+  timeoutMs?: number;
 };
 
 export function matchByCommand(request: RawPacket, response: RawPacket): boolean {
