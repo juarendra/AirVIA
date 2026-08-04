@@ -23,8 +23,10 @@
 <div class="p-4">
   <h3 class="text-base font-semibold text-slate-700 mb-3">Encoder Assignment — Layer {activeLayer}</h3>
 
-  {#if !available}
-    <p class="text-slate-400 text-sm italic">Encoders are not supported by this device</p>
+  {#if getEncoderMap() === null}
+    <div class="p-8 text-center text-slate-400 text-sm italic">
+      <p>Configuration is not supported or not loaded for this device</p>
+    </div>
   {:else if encoderCount === 0}
     <p class="text-slate-400 text-sm italic">No encoders defined in V3 definition</p>
   {:else}

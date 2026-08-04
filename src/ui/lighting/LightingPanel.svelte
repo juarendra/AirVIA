@@ -20,7 +20,6 @@
   }
 
   const lighting = $derived(getLighting());
-  const available = $derived(lighting !== null);
 
   const sliders = [
     { key: 'brightness', label: 'Brightness', min: 0, max: 255, get: () => lighting?.brightness ?? 0, set: (v: number) => { syncLightValue(0x01, v, 0, () => setLightingBrightness(v)); }, accent: 'blue' },
@@ -38,8 +37,10 @@
 
 <div class="max-w-xl mx-auto p-4">
   <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5">
-    {#if !available}
-      <p class="text-slate-400 text-sm italic text-center">Lighting controls are not supported by this device</p>
+    {#if getLighting() === null}
+      <div class="p-8 text-center text-slate-400 text-sm italic">
+        <p>Configuration is not supported or not loaded for this device</p>
+      </div>
     {:else}
       {#each sliders as s}
       <div class="space-y-1.5">
