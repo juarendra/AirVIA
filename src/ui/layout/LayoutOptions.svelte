@@ -1,18 +1,23 @@
 <script lang="ts">
   import { getLayoutOptions, setLayoutOptions, markDirty } from '../../store/app.svelte';
   import { Protocol } from '../../core/protocol';
-  import { sendPacket } from '../../ble/dispatch';
+  import { sendViaCommand } from '../../ble/dispatch';
+  import { toast } from '../shared/Toast.svelte';
 
   const available = $derived(getLayoutOptions() !== null);
   const options = $derived(getLayoutOptions() ?? 0);
   const hex = $derived('0x' + options.toString(16).padStart(8, '0').toUpperCase());
 
-  function toggle(bit: number) {
+  async function toggle(bit: number) {
     if (!available) return;
     const next = options ^ (1 << bit);
-    setLayoutOptions(next);
-    markDirty();
-    sendPacket(Protocol.setLayoutOptions(next)).catch(() => {});
+    try {
+      await sendViaCommand(Protocol.setLayoutOptions(next));
+      setLayoutOptions(next);
+      markDirty();
+    } catch (err) {
+      toast('Failed to update layout', 'error');
+    }
   }
 </script>
 
