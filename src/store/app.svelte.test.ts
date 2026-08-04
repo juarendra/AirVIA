@@ -1,12 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
-vi.mock('./app.svelte', () => {
-  let phase = 'disconnected';
-  return {
-    getSyncPhase: () => phase,
-    setSyncPhase: (p: any) => { phase = p; },
-    markStale: () => { phase = 'stale'; }
-  };
-});
+import { describe, it, expect } from 'vitest';
 import { setSyncPhase, getSyncPhase, markStale } from './app.svelte';
 
 describe('Session State', () => {
