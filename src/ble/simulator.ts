@@ -11,6 +11,12 @@ export class SimulatorTransport implements Transport {
     if (data[0] === 0x01 && data[1] === 0x01) {
       return [0x01, 0x00, 0x0C]; // Protocol V12
     }
+    if (data[0] === 0x07) {
+      // Lighting configuration
+      // Return 0x07 command echoed back with acknowledgment
+      const resp = [...data];
+      return resp;
+    }
     return [0xFF]; // Error
   }
 

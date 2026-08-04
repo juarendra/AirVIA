@@ -3,16 +3,15 @@
   import { Protocol } from '../../core/protocol';
   import { sendViaCommand } from '../../ble/dispatch';
 
-  let timer: ReturnType<typeof setTimeout> | null = null;
+  const timers: Record<string, ReturnType<typeof setTimeout>> = {};
 
-  async function syncLightValue(channel: number, v1: number, v2: number, commitLocalState: () => void) {
-    commitLocalState();
-    markDirty();
-    
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(async () => {
+  async function syncLightValue(channel: number, v1: number, v2: number, commitLocalState: () => void, key: string) {
+    if (timers[key]) clearTimeout(timers[key]);
+    timers[key] = setTimeout(async () => {
       try {
         await sendViaCommand(Protocol.setCustomValue(channel, v1, v2));
+        commitLocalState();
+        markDirty();
       } catch (err) {
         console.error('Lighting sync failed', err);
       }
@@ -22,11 +21,11 @@
   const lighting = $derived(getLighting());
 
   const sliders = [
-    { key: 'brightness', label: 'Brightness', min: 0, max: 255, get: () => lighting?.brightness ?? 0, set: (v: number) => { syncLightValue(0x01, v, 0, () => setLightingBrightness(v)); }, accent: 'blue' },
-    { key: 'effect',     label: 'Effect',     min: 0, max: 20,  get: () => lighting?.effect ?? 0,     set: (v: number) => { syncLightValue(0x02, v, 0, () => setLightingEffect(v)); },     accent: 'blue' },
-    { key: 'speed',      label: 'Speed',      min: 0, max: 255, get: () => lighting?.speed ?? 0,      set: (v: number) => { syncLightValue(0x03, v, 0, () => setLightingSpeed(v)); },      accent: 'blue' },
-    { key: 'hue',        label: 'Hue',        min: 0, max: 255, get: () => lighting?.hue ?? 0,        set: (v: number) => { syncLightValue(0x04, v, lighting?.saturation ?? 0, () => setLightingHue(v)); },        accent: 'pink' },
-    { key: 'saturation', label: 'Saturation', min: 0, max: 255, get: () => lighting?.saturation ?? 0, set: (v: number) => { syncLightValue(0x04, lighting?.hue ?? 0, v, () => setLightingSaturation(v)); }, accent: 'pink' },
+    { key: 'brightness', label: 'Brightness', min: 0, max: 255, get: () => lighting?.brightness ?? 0, set: (v: number) => { syncLightValue(0x01, v, 0, () => setLightingBrightness(v), 'brightness'); }, accent: 'blue' },
+    { key: 'effect',     label: 'Effect',     min: 0, max: 20,  get: () => lighting?.effect ?? 0,     set: (v: number) => { syncLightValue(0x02, v, 0, () => setLightingEffect(v), 'effect'); },     accent: 'blue' },
+    { key: 'speed',      label: 'Speed',      min: 0, max: 255, get: () => lighting?.speed ?? 0,      set: (v: number) => { syncLightValue(0x03, v, 0, () => setLightingSpeed(v), 'speed'); },      accent: 'blue' },
+    { key: 'hue',        label: 'Hue',        min: 0, max: 255, get: () => lighting?.hue ?? 0,        set: (v: number) => { syncLightValue(0x04, v, lighting?.saturation ?? 0, () => setLightingHue(v), 'hue'); },        accent: 'pink' },
+    { key: 'saturation', label: 'Saturation', min: 0, max: 255, get: () => lighting?.saturation ?? 0, set: (v: number) => { syncLightValue(0x04, lighting?.hue ?? 0, v, () => setLightingSaturation(v), 'saturation'); }, accent: 'pink' },
   ];
 
   const accentTrack: Record<string, string> = {
