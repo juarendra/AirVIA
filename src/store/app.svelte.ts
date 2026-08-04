@@ -25,14 +25,14 @@ let saturation = $state<number | null>(null);
 export type SaveState = 'clean' | 'dirty' | 'saving' | 'saved' | 'failed';
 
 export type SyncPhase =
-  | 'idle'
+  | 'disconnected'
   | 'connecting'
-  | 'connected'
   | 'syncing'
   | 'ready'
-  | 'error';
+  | 'error'
+  | 'stale';
 
-let syncPhase = $state<SyncPhase>('idle');
+let syncPhase = $state<SyncPhase>('disconnected');
 let syncProgress = $state('');
 let deviceName = $state('');
 let protocolVersion = $state(0);
@@ -79,7 +79,7 @@ export function markSaveFailed() { saveState = 'failed'; }
 
 export function resetDeviceState() {
   setConnectionState('disconnected');
-  setSyncPhase('idle');
+  setSyncPhase('disconnected');
   setSyncProgress('');
   setDeviceName('');
   setProtocolVersion(0);
@@ -147,12 +147,13 @@ export function setLightingHue(v: number) { hue = v; }
 export function setLightingSaturation(v: number) { saturation = v; }
 
 export function getSyncPhase(): SyncPhase { return syncPhase; }
+export function setSyncPhase(p: SyncPhase) { syncPhase = p; }
+export function markStale() { syncPhase = 'stale'; }
 export function getSyncProgress(): string { return syncProgress; }
 export function getDeviceName(): string { return deviceName; }
 export function getProtocolVersion(): number { return protocolVersion; }
 export function getFirmwareVersion(): number { return firmwareVersion; }
 
-export function setSyncPhase(p: SyncPhase) { syncPhase = p; }
 export function setSyncProgress(s: string) { syncProgress = s; }
 export function setDeviceName(n: string) { deviceName = n; }
 export function setProtocolVersion(v: number) { protocolVersion = v; }

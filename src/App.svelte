@@ -34,7 +34,8 @@
     resetDeviceState,
     getDefinition,
     setMacroCount,
-    setMacroBytes
+    setMacroBytes,
+    markStale
   } from './store/app.svelte';
 
   let transport: BLETransport | null = null;
@@ -50,6 +51,8 @@
       setConnectionState(s);
       if (s === 'disconnected') {
         setTransport(null);
+        // ponytail: mark stale on unexpected disconnects to lock editors, user can reset via ConnectBar later
+        markStale();
       }
     };
     transport.onResponse = (pkt) => addPacketLog('rx', pkt);
