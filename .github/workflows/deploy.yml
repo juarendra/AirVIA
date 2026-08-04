@@ -2,8 +2,9 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [master]
-  workflow_dispatch:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
 
 permissions:
   contents: read
@@ -15,17 +16,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v3
         with:
-          version: 10
+          version: 8
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: pnpm
+          node-version: 20
+          cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm test
@@ -35,7 +36,8 @@ jobs:
           path: dist
 
   deploy:
-    needs: build
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
