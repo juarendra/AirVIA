@@ -10,7 +10,7 @@
     "paths": { "$lib/*": ["./src/*"] },
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": []
   },
   "include": ["src/**/*.ts", "src/**/*.svelte"]
 }

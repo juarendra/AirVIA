@@ -1,8 +1,3 @@
-declare module '*.css?raw' {
-  const content: string;
-  export default content;
-}
-
 declare class BluetoothRemoteGATTCharacteristic {
   startNotifications(): Promise<void>;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
