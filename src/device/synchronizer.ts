@@ -29,7 +29,14 @@ export async function synchronizeDevice(): Promise<DeviceSnapshot> {
   const keymap = new Array(layers * def.matrix.rows * def.matrix.cols).fill(0);
 
   for (let offset = 0; offset < keymapBytes; offset += 28) {
-    const resp = await sendViaCommand(Protocol.getKeymapBuffer(offset, Math.min(28, keymapBytes - offset)));
+    const expectedSize = Math.min(28, keymapBytes - offset);
+    const expectedOffset = [(offset >>> 8) & 0xff, offset & 0xff];
+    const resp = await sendViaCommand(Protocol.getKeymapBuffer(offset, expectedSize));
+    
+    if (resp.length - 4 !== expectedSize || resp.length % 2 !== 0 || resp[2] !== expectedOffset[1]) {
+      throw new Error('Invalid chunk response');
+    }
+
     const chunk = decodeBufferChunk(resp);
     
     if (chunk.offset < 0 || chunk.offset >= keymapBytes) {
