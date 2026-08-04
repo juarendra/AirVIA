@@ -1,17 +1,33 @@
 <script lang="ts">
   import { getLighting, setLightingBrightness, setLightingEffect, setLightingSpeed, setLightingHue, setLightingSaturation, markDirty } from '../../store/app.svelte';
   import { Protocol } from '../../core/protocol';
-  import { sendPacket } from '../../ble/dispatch';
+  import { sendViaCommand } from '../../ble/dispatch';
+
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  async function syncLightValue(channel: number, v1: number, v2: number, commitLocalState: () => void) {
+    commitLocalState();
+    markDirty();
+    
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(async () => {
+      try {
+        await sendViaCommand(Protocol.setCustomValue(channel, v1, v2));
+      } catch (err) {
+        console.error('Lighting sync failed', err);
+      }
+    }, 150); // 150ms debounce
+  }
 
   const lighting = $derived(getLighting());
   const available = $derived(lighting !== null);
 
   const sliders = [
-    { key: 'brightness', label: 'Brightness', min: 0, max: 255, get: () => lighting?.brightness ?? 0, set: (v: number) => { setLightingBrightness(v); markDirty(); sendPacket(Protocol.setCustomValue(0x01, v, 0)).catch(() => {}); }, accent: 'blue' },
-    { key: 'effect',     label: 'Effect',     min: 0, max: 20,  get: () => lighting?.effect ?? 0,     set: (v: number) => { setLightingEffect(v); markDirty(); sendPacket(Protocol.setCustomValue(0x02, v, 0)).catch(() => {}); },     accent: 'blue' },
-    { key: 'speed',      label: 'Speed',      min: 0, max: 255, get: () => lighting?.speed ?? 0,      set: (v: number) => { setLightingSpeed(v); markDirty(); sendPacket(Protocol.setCustomValue(0x03, v, 0)).catch(() => {}); },      accent: 'blue' },
-    { key: 'hue',        label: 'Hue',        min: 0, max: 255, get: () => lighting?.hue ?? 0,        set: (v: number) => { setLightingHue(v); markDirty(); sendPacket(Protocol.setCustomValue(0x04, v, lighting?.saturation ?? 0)).catch(() => {}); },        accent: 'pink' },
-    { key: 'saturation', label: 'Saturation', min: 0, max: 255, get: () => lighting?.saturation ?? 0, set: (v: number) => { setLightingSaturation(v); markDirty(); sendPacket(Protocol.setCustomValue(0x04, lighting?.hue ?? 0, v)).catch(() => {}); }, accent: 'pink' },
+    { key: 'brightness', label: 'Brightness', min: 0, max: 255, get: () => lighting?.brightness ?? 0, set: (v: number) => { syncLightValue(0x01, v, 0, () => setLightingBrightness(v)); }, accent: 'blue' },
+    { key: 'effect',     label: 'Effect',     min: 0, max: 20,  get: () => lighting?.effect ?? 0,     set: (v: number) => { syncLightValue(0x02, v, 0, () => setLightingEffect(v)); },     accent: 'blue' },
+    { key: 'speed',      label: 'Speed',      min: 0, max: 255, get: () => lighting?.speed ?? 0,      set: (v: number) => { syncLightValue(0x03, v, 0, () => setLightingSpeed(v)); },      accent: 'blue' },
+    { key: 'hue',        label: 'Hue',        min: 0, max: 255, get: () => lighting?.hue ?? 0,        set: (v: number) => { syncLightValue(0x04, v, lighting?.saturation ?? 0, () => setLightingHue(v)); },        accent: 'pink' },
+    { key: 'saturation', label: 'Saturation', min: 0, max: 255, get: () => lighting?.saturation ?? 0, set: (v: number) => { syncLightValue(0x04, lighting?.hue ?? 0, v, () => setLightingSaturation(v)); }, accent: 'pink' },
   ];
 
   const accentTrack: Record<string, string> = {
