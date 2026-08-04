@@ -9,6 +9,7 @@ export type V3Definition = {
   matrix: { rows: number; cols: number };
   layouts: V3Layout;
   encoders?: number;
+  lighting?: 'none' | 'qmk_backlight' | 'qmk_rgblight' | 'wt_mono' | 'wt_rgb' | 'v2' | 'v3';
 };
 
 export class V3ParseError extends Error {
@@ -148,6 +149,14 @@ export function parseV3Definition(json: string): V3Definition {
       'encoders must be non-negative integer',
     );
     def.encoders = obj.encoders;
+  }
+
+  if (obj.lighting !== undefined) {
+    assert(
+      typeof obj.lighting === 'string' && ['none', 'qmk_backlight', 'qmk_rgblight', 'wt_mono', 'wt_rgb', 'v2', 'v3'].includes(obj.lighting),
+      'lighting must be a known string value',
+    );
+    def.lighting = obj.lighting as V3Definition['lighting'];
   }
 
   return def;
