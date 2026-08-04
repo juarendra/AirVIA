@@ -1,10 +1,10 @@
-import { defineConfig } from 'vitest/config';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { defineConfig, mergeConfig } from 'vitest/config';
+import viteConfig from './vite.config';
 
-export default defineConfig({
-  plugins: [svelte()],
+export default mergeConfig(viteConfig, defineConfig({
   test: {
     include: ['src/**/*.test.ts'],
-    environment: 'jsdom'
+    environment: 'jsdom',
+    setupFiles: ['./vitest-setup.js'],
   },
-});
+}));

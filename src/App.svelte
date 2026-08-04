@@ -183,17 +183,21 @@
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
   >
-    <!-- Sidebar for Desktop, Top for mobile -->
-    <aside class="w-full md:w-64 bg-surface-dark border-r border-surface-raised flex flex-col justify-between">
-      <div>
-        <ConnectBar onConnect={handleConnect} onDisconnect={handleDisconnect} />
+    <!-- Desktop sidebar rail -->
+    <aside class="hidden md:flex md:w-60 md:min-w-[240px] bg-surface-dark border-r border-surface-raised flex-col">
+      <ConnectBar onConnect={handleConnect} onDisconnect={handleDisconnect} />
+      <div class="flex-1 overflow-y-auto">
         <TabBar />
       </div>
-      <ProfileManager />
     </aside>
 
+    <!-- Mobile connect header -->
+    <div class="md:hidden">
+      <ConnectBar onConnect={handleConnect} onDisconnect={handleDisconnect} />
+    </div>
+
     <!-- Main Editor Area -->
-    <main class="flex-1 flex flex-col min-w-0">
+    <main class="flex-1 flex flex-col min-w-0 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
       {#if activeTab === 'keymap' || activeTab === 'encoder'}
         <LayerSelector />
       {/if}
@@ -207,12 +211,16 @@
           <MacroEditor />
         {:else if activeTab === 'lighting'}
           <LightingPanel />
+        {:else if activeTab === 'profiles'}
+          <ProfileManager />
         {:else if activeTab === 'layout'}
           <LayoutOptions />
         {:else if activeTab === 'actions'}
           <DeviceActions />
         {:else if activeTab === 'console'}
           <PacketLog />
+        {:else if activeTab === 'manual'}
+          <div class="flex items-center justify-center h-full text-text-muted text-sm">Manual pengguna akan tersedia segera.</div>
         {/if}
       </div>
     </main>
