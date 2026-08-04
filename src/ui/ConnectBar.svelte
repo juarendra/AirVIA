@@ -10,15 +10,17 @@
     onDisconnect: () => Promise<void>;
   } = $props();
 
-  let error = $state<string | null>(null);
-  let connecting = $state(false);
+  let errorState = $state('');
+  let isConnecting = $state(false);
 
-  const stateDot: Record<TransportState, string> = {
+  const connState = $derived(getConnectionState());
+
+  const stateDot = {
     connected: 'bg-green-500',
     connecting: 'bg-yellow-500 animate-pulse',
     error: 'bg-red-500',
     disconnected: 'bg-slate-300',
-  };
+  } as Record<TransportState, string>;
 
   function stateLabel(s: TransportState): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
@@ -37,35 +39,34 @@
   }
 
   async function handleConnect() {
-    error = null;
-    connecting = true;
+    errorState = '';
+    isConnecting = true;
     setConnectionState('connecting');
     try {
       await onConnect();
     } catch (e) {
-      error = e instanceof Error ? e.message : 'Connection failed';
+      errorState = e instanceof Error ? e.message : 'Connection failed';
       setConnectionState('error');
     } finally {
-      connecting = false;
+      isConnecting = false;
     }
   }
 
   function handleDisconnect() {
     onDisconnect();
-    error = null;
+    errorState = '';
   }
 
-  const state = $derived(getConnectionState());
 </script>
 
 <div class="bg-surface-dark border-b border-surface-raised px-4 py-3 flex items-center justify-between">
   <div class="flex items-center gap-3">
     <span class="text-lg font-bold text-accent-cyan tracking-wider">AirVIA</span>
     <div class="flex items-center gap-1.5">
-      <span class="inline-block w-2 h-2 rounded-full {stateDot[state]}" aria-label={state}></span>
-      <span class="text-xs text-text-muted px-2 py-0.5 rounded-full bg-surface-elevated font-medium">{stateLabel(state)}</span>
+      <span class="inline-block w-2 h-2 rounded-full {stateDot[connState]}" aria-label={connState}></span>
+      <span class="text-xs text-text-muted px-2 py-0.5 rounded-full bg-surface-elevated font-medium">{stateLabel(connState)}</span>
     </div>
-    {#if state === 'connected' || getSyncPhase() === 'syncing' || getSyncPhase() === 'ready'}
+    {#if connState === 'connected' || getSyncPhase() === 'syncing' || getSyncPhase() === 'ready'}
       <span class="text-xs text-text-primary ml-1">{getDeviceName() || 'VIA Keyboard'}</span>
       {#if getSyncPhase() === 'syncing'}
         <span class="text-xs text-accent-cyan animate-pulse">{getSyncProgress()}</span>
@@ -78,13 +79,13 @@
   </div>
 
   <div class="flex items-center gap-3">
-    {#if error}
-      <span class="text-sm text-accent-red max-w-64 truncate" title={error}>{error}</span>
+    {#if errorState}
+      <span class="text-sm text-accent-red max-w-64 truncate" title={errorState}>{errorState}</span>
     {/if}
 
     {#if saveState === 'dirty'}
       <button onclick={handleSave}
-        disabled={state !== 'connected'}
+        disabled={connState !== 'connected'}
         class="px-3 py-1.5 bg-accent-cyan text-bg-dark rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-colors">
         Save
       </button>
@@ -94,16 +95,16 @@
       <span class="text-sm text-accent-lime">&#10003;</span>
     {:else if saveState === 'failed'}
       <button onclick={handleSave}
-        disabled={state !== 'connected'}
+        disabled={connState !== 'connected'}
         class="text-sm text-accent-red hover:underline disabled:opacity-50">
         Retry
       </button>
     {/if}
 
-    {#if state === 'disconnected' || state === 'error'}
+    {#if connState === 'disconnected' || connState === 'error'}
       <button
         onclick={handleConnect}
-        disabled={connecting}
+        disabled={isConnecting}
         class="flex items-center justify-center p-2 bg-surface-raised hover:bg-surface-elevated disabled:opacity-50 rounded-lg text-text-primary transition-colors"
         title="Connect"
       >

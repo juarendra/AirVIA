@@ -7,7 +7,7 @@
   const selected = $derived(getSelectedTarget());
   const CELL = 52;
 
-  const positions = $derived(() => {
+  const positions = $derived.by(() => {
     if (!def) return [];
     return def.layouts.keymap.map(k => ({
       ...k,
@@ -16,15 +16,11 @@
     }));
   });
 
-  const containerStyle = $derived(() => {
-    if (!def || !positions.length) return {};
+  const containerStyle = $derived.by(() => {
+    if (!def || !positions.length) return '';
     const maxX = Math.max(...positions.map(p => p.x + (p.w ?? 1)));
     const maxY = Math.max(...positions.map(p => p.y + (p.h ?? 1)));
-    return {
-      width: `${maxX * CELL}px`,
-      height: `${maxY * CELL}px`,
-      position: 'relative',
-    };
+    return `width: ${maxX * CELL}px; height: ${maxY * CELL}px; position: relative;`;
   });
 
   function handleKeydown(e: KeyboardEvent) {
@@ -35,8 +31,9 @@
     if (currentIndex === -1) return;
 
     const currentKey = def.layouts.keymap[currentIndex];
+    if (!currentKey) return;
     
-    let nextKey;
+    let nextKey: typeof currentKey | undefined;
 
     // Ponytail: Simple spatial navigation by bounding box intersection/closest center
     // Fall back to DOM array order if simple geometry is too fuzzy, but let's just use array index offsets for simplicity if matrix is roughly linear

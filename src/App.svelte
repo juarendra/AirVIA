@@ -33,6 +33,8 @@
     setSyncProgress,
     resetDeviceState,
     getDefinition,
+    setMacroCount,
+    setMacroBytes
   } from './store/app.svelte';
 
   let transport: BLETransport | null = null;
