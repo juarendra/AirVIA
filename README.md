@@ -25,6 +25,8 @@ AirVIA is **local-first**. It runs entirely in your browser without a backend.
 
 ## Hardware Support
 
+v1.0.0-rc.1 is protocol-verified via deterministic VIA v13 simulator. Hardware testing pending.
+
 Initial public support is bounded. Features like Encoders, Lighting, Layouts, and Macros will gracefully disable if your specific firmware version does not expose them.
 
 ## Development
