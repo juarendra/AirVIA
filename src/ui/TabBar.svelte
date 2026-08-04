@@ -1,8 +1,9 @@
 <script lang="ts">
   import { getActiveTab, setActiveTab } from '../store/app.svelte';
+  import type { AppDestination } from './navigation';
   import Icon from './shared/Icon.svelte';
 
-  const tabs: Array<{ id: string; label: string; icon: string }> = [
+  const tabs: Array<{ id: AppDestination; label: string; icon: string }> = [
     { id: 'keymap', label: 'KEYMAP', icon: 'keyboard' },
     { id: 'encoder', label: 'ENCODER', icon: 'settings' },
     { id: 'macros', label: 'MACROS', icon: 'terminal' },

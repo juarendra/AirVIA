@@ -2,11 +2,12 @@ import type { V3Definition } from '../core/v3-definition';
 import type { TransportState } from '../ble/transport';
 import type { RawPacket } from '../core/protocol';
 import { keycodeLabel } from '../core/keycodes';
+import type { AppDestination } from '../ui/navigation';
 
 let definition = $state<V3Definition | null>(null);
 let connectionState = $state<TransportState>('disconnected');
 let activeLayer = $state<number>(0);
-let activeTab = $state<string>('keymap');
+let activeTab = $state<AppDestination>('keymap');
 let keymap = $state<number[]>([]);
 let layerCount = $state<number>(0);
 let encoderCount = $state<number>(0);
@@ -103,8 +104,8 @@ export function setConnectionState(s: TransportState) { connectionState = s; }
 export function getActiveLayer(): number { return activeLayer; }
 export function setActiveLayer(n: number) { activeLayer = n; }
 
-export function getActiveTab(): string { return activeTab; }
-export function setActiveTab(t: string) { activeTab = t; }
+export function getActiveTab(): AppDestination { return activeTab; }
+export function setActiveTab(t: AppDestination) { activeTab = t; }
 
 export function getKeymap(): number[] { return keymap; }
 export function setKeymap(km: number[]) { keymap = km; }
