@@ -85,8 +85,8 @@
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <div class="p-4 overflow-x-auto min-w-max relative" style="max-height: calc(100dvh - 200px)" onkeydown={handleKeydown} tabindex="0">
     {#if getSyncPhase() !== 'ready'}
-      <div class="absolute inset-0 bg-white/60 flex items-center justify-center z-10 rounded-lg">
-        <span class="text-slate-500 font-medium text-sm">
+      <div class="absolute inset-0 bg-[#060912]/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-[var(--air-radius-lg)]">
+        <span class="text-[var(--air-text-muted)] font-medium text-sm">
           {getSyncPhase() === 'syncing' ? getSyncProgress() : 'Connect and sync to edit'}
         </span>
       </div>
@@ -107,7 +107,7 @@
         {/if}
       {/each}
     </div>
-    <div class="text-xs text-slate-400 text-center mt-2">
+    <div class="text-xs text-[var(--air-text-dimmed)] text-center mt-2">
       {def.name} &mdash; {def.matrix.rows}&times;{def.matrix.cols} matrix
     </div>
     {#if getPendingChanges() > 0}
@@ -118,7 +118,7 @@
   </div>
 {:else}
   <div class="flex items-center justify-center h-64">
-    <div class="text-center text-slate-400">
+    <div class="text-center text-[var(--air-text-dimmed)]">
       <p class="text-lg mb-2">No definition loaded</p>
       <p class="text-sm">Use the button at bottom-left to load a V3 definition JSON file.</p>
       <p class="text-xs mt-1">VIA v3 schema with explicit matrix coordinates per key.</p>
