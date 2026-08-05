@@ -13,6 +13,7 @@
   import Toast from './ui/shared/Toast.svelte';
   import BrowserCheck from './ui/shared/BrowserCheck.svelte';
   import ProfileManager from './ui/profile/ProfileManager.svelte';
+  import DefinitionOnboarding from './ui/definition/DefinitionOnboarding.svelte';
   import { toast } from './ui/shared/Toast.svelte';
 
   import { BLETransport } from './ble/transport';
@@ -198,7 +199,7 @@
 
     <!-- Main Editor Area -->
     <main class="flex-1 flex flex-col min-w-0 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
-      {#if activeTab !== 'manual'}
+      {#if activeTab !== 'manual' && getDefinition()}
         <WorkspaceHeader />
       {:else}
         <div class="bg-surface-dark border-b border-surface-raised px-4 py-3 md:px-5 md:py-4">
@@ -207,7 +208,9 @@
       {/if}
 
       <div class="flex-1 min-h-0">
-        {#if activeTab === 'keymap'}
+        {#if !getDefinition() && activeTab !== 'manual'}
+          <DefinitionOnboarding onLoad={triggerFileInput} />
+        {:else if activeTab === 'keymap'}
           <KeymapGrid />
         {:else if activeTab === 'encoder'}
           <EncoderEditor />
@@ -220,7 +223,7 @@
         {:else if activeTab === 'layout'}
           <LayoutOptions />
         {:else if activeTab === 'actions'}
-          <DeviceActions />
+          <DeviceActions onReplaceDefinition={triggerFileInput} />
         {:else if activeTab === 'console'}
           <PacketLog />
         {:else if activeTab === 'manual'}
@@ -230,8 +233,8 @@
     </main>
 
     {#if dragOver}
-      <div class="fixed inset-0 bg-black/20 border-2 border-dashed border-blue-400 z-40 pointer-events-none flex items-center justify-center">
-        <span class="text-2xl text-blue-500 font-bold">Drop V3 definition JSON</span>
+      <div class="fixed inset-0 bg-black/60 border-2 border-dashed border-accent-cyan z-40 pointer-events-none flex items-center justify-center">
+        <span class="text-2xl text-accent-cyan font-bold">Drop V3 definition JSON</span>
       </div>
     {/if}
 
@@ -242,14 +245,6 @@
       onchange={handleFileChange}
       class="hidden"
     />
-
-    <button
-      onclick={triggerFileInput}
-      class="fixed bottom-4 left-4 z-50 px-3 py-2 bg-white border border-dashed border-slate-300 rounded-xl text-sm text-slate-500 hover:text-slate-700 hover:border-slate-400 shadow-sm transition-colors"
-      title="Load V3 definition JSON"
-    >
-      Load definition JSON
-    </button>
 
     <Toast />
     <KeycodePicker />
