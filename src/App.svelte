@@ -14,14 +14,17 @@
   import BrowserCheck from './ui/shared/BrowserCheck.svelte';
   import ProfileManager from './ui/profile/ProfileManager.svelte';
   import DefinitionOnboarding from './ui/definition/DefinitionOnboarding.svelte';
+  import ManualPage from './ui/manual/ManualPage.svelte';
   import { toast } from './ui/shared/Toast.svelte';
 
   import { BLETransport } from './ble/transport';
   import { setTransport } from './ble/dispatch';
   import { synchronizeDevice } from './device/synchronizer';
   import { parseV3Definition } from './core/v3-definition';
+  import { onMount } from 'svelte';
   import {
     getActiveTab,
+    setActiveTab,
     setDefinition,
     setConnectionState,
     addPacketLog,
@@ -174,6 +177,15 @@
   }
 
   const activeTab = $derived(getActiveTab());
+
+  onMount(() => {
+    function onNavigate(e: Event) {
+      const tab = (e as CustomEvent<string>).detail;
+      if (tab === 'manual') setActiveTab('manual');
+    }
+    window.addEventListener('airvia-navigate', onNavigate);
+    return () => window.removeEventListener('airvia-navigate', onNavigate);
+  });
 </script>
 
 <BrowserCheck>
@@ -227,7 +239,7 @@
         {:else if activeTab === 'console'}
           <PacketLog />
         {:else if activeTab === 'manual'}
-          <div class="flex items-center justify-center h-full text-text-muted text-sm">Manual pengguna akan tersedia segera.</div>
+          <ManualPage />
         {/if}
       </div>
     </main>
