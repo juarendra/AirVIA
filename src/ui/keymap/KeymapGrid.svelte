@@ -120,7 +120,7 @@
   <div class="flex items-center justify-center h-64">
     <div class="text-center text-[var(--air-text-dimmed)]">
       <p class="text-lg mb-2">No definition loaded</p>
-      <p class="text-sm">Use the button at bottom-left to load a V3 definition JSON file.</p>
+      <p class="text-sm">Use Load definition from the workspace homepage or drag and drop a V3 definition JSON file here.</p>
       <p class="text-xs mt-1">VIA v3 schema with explicit matrix coordinates per key.</p>
     </div>
   </div>

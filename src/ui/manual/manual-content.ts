@@ -20,16 +20,16 @@ export const manualSections: ManualSection[] = [
     summary: 'Panduan singkat untuk mulai menggunakan AirVIA Configurator.',
     keywords: ['mulai', 'cepat', 'instalasi', 'pertama', 'connect'],
     blocks: [
-      { type: 'paragraph', text: 'AirVIA Configurator adalah aplikasi berbasis web untuk mengonfigurasi keyboard AirVIA melalui WebHID di browser Chromium. Aplikasi berjalan sepenuhnya di sisi klien, tanpa server.' },
+      { type: 'paragraph', text: 'AirVIA Configurator adalah aplikasi berbasis web untuk mengonfigurasi keyboard AirVIA melalui Web Bluetooth di browser yang didukung. Aplikasi berjalan sepenuhnya di sisi klien, tanpa server.' },
       { type: 'steps', items: [
         'Buka aplikasi di browser berbasis Chromium (Chrome, Edge, Opera) versi terbaru.',
-        'Hubungkan keyboard AirVIA ke komputer melalui kabel USB.',
+        'Hubungkan keyboard AirVIA melalui Web Bluetooth.',
         'Klik tombol "Connect" pada bilah atas atau halaman utama.',
-        'Pilih perangkat AirVIA dari dialog WebHID yang muncul.',
+        'Pilih perangkat AirVIA dari dialog Bluetooth pairing yang muncul.',
         'Setelah tersambung, indikator status berubah menjadi hijau dan Anda siap mengonfigurasi.'
       ]},
       { type: 'notes', items: [
-        'Browser harus mendukung WebHID. Safari dan Firefox belum mendukung WebHID penuh.',
+        'Browser harus mendukung Web Bluetooth. Safari dan Firefox belum mendukung Web Bluetooth penuh.',
         'Pastikan keyboard dalam mode operasi normal (bukan mode bootloader).'
       ]},
       { type: 'warning', title: 'Versi RC', text: 'Aplikasi ini versi v1.0.0-rc.1. Semua fitur telah diverifikasi melalui simulator. Pengujian pada perangkat keras masih menunggu konfirmasi.' }
@@ -39,17 +39,17 @@ export const manualSections: ManualSection[] = [
     id: 'browser',
     title: 'Browser',
     summary: 'Informasi browser yang kompatibel dan cara penyiapan.',
-    keywords: ['browser', 'chromium', 'webhid', 'kompatibilitas', 'edge', 'opera', 'brave'],
+    keywords: ['browser', 'chromium', 'webbluetooth', 'kompatibilitas', 'edge', 'opera', 'brave'],
     blocks: [
-      { type: 'paragraph', text: 'AirVIA Configurator memerlukan browser berbasis Chromium dengan dukungan WebHID. WebHID adalah API yang memungkinkan aplikasi web berkomunikasi langsung dengan perangkat HID (Human Interface Device).' },
+      { type: 'paragraph', text: 'AirVIA Configurator memerlukan browser dengan dukungan Web Bluetooth. Web Bluetooth adalah API yang memungkinkan aplikasi web berkomunikasi dengan perangkat BLE (Bluetooth Low Energy).' },
       { type: 'notes', items: [
-        'Google Chrome 89+ direkomendasikan untuk pengalaman terbaik.',
-        'Microsoft Edge 89+ didukung penuh.',
-        'Opera dan Brave berbasis Chromium juga kompatibel, namun mungkin memerlukan pengaktifan WebHID di flags.',
-        'Safari dan Firefox: WebHID belum didukung. Gunakan browser Chromium untuk mengonfigurasi keyboard Anda.'
+        'Google Chrome 122+ atau Edge 122+ direkomendasikan untuk pengalaman terbaik.',
+        'Microsoft Edge 122+ didukung penuh.',
+        'Opera dan Brave berbasis Chromium juga kompatibel, namun mungkin memerlukan pengaktifan Web Bluetooth di flags.',
+        'Safari dan Firefox: Web Bluetooth belum didukung. Gunakan browser Chromium untuk mengonfigurasi keyboard Anda.'
       ]},
       { type: 'steps', items: [
-        'Pastikan browser Anda versi Chrome/Edge 89 atau lebih baru.',
+        'Pastikan browser Anda versi Chrome/Edge 122 atau lebih baru.',
         'Jika menggunakan Brave/Opera, kunjungi chrome://flags dan aktifkan "Experimental Web Platform features".',
         'Tidak diperlukan ekstensi atau plugin tambahan — seluruh konfigurasi berjalan di tab browser.'
       ]}
@@ -75,17 +75,17 @@ export const manualSections: ManualSection[] = [
     id: 'connect',
     title: 'Connect',
     summary: 'Cara menyambungkan keyboard AirVIA ke Configurator.',
-    keywords: ['connect', 'sambung', 'webhid', 'pairing', 'koneksi'],
+    keywords: ['connect', 'sambung', 'webbluetooth', 'pairing', 'koneksi'],
     blocks: [
-      { type: 'paragraph', text: 'Koneksi antara AirVIA Configurator dan keyboard dilakukan melalui WebHID. Setiap sesi koneksi bersifat sementara dan harus diinisiasi ulang saat halaman dimuat ulang.' },
+      { type: 'paragraph', text: 'Koneksi antara AirVIA Configurator dan keyboard dilakukan melalui Web Bluetooth. Setiap sesi koneksi bersifat sementara dan harus diinisiasi ulang saat halaman dimuat ulang.' },
       { type: 'steps', items: [
         'Klik tombol "Connect" di pojok kanan atas bilah navigasi.',
-        'Dialog WebHID akan muncul menampilkan perangkat HID yang tersedia.',
+        'Dialog Bluetooth pairing akan muncul menampilkan perangkat BLE yang tersedia.',
         'Pilih perangkat keyboard AirVIA Anda dan klik "Connect".',
         'Tunggu hingga indikator status berubah hijau dengan teks "Connected".'
       ]},
       { type: 'notes', items: [
-        'Jika perangkat tidak muncul, pastikan keyboard terhubung via USB dan tidak dalam mode bootloader.',
+        'Jika perangkat tidak muncul, pastikan keyboard dalam mode BLE pairing dan tidak dalam mode bootloader.',
         'Koneksi hanya bertahan selama sesi tab browser. Muat ulang halaman akan memutus koneksi.',
         'Hanya satu keyboard yang dapat tersambung dalam satu waktu.'
       ]},
@@ -271,22 +271,22 @@ export const manualSections: ManualSection[] = [
     id: 'disconnect-recovery',
     title: 'Disconnect / Recovery',
     summary: 'Prosedur pemutusan dan pemulihan koneksi.',
-    keywords: ['disconnect', 'putus', 'pemulihan', 'reconnect', 'driver', 'hid'],
+    keywords: ['disconnect', 'putus', 'pemulihan', 'reconnect', 'driver', 'bluetooth'],
     blocks: [
-      { type: 'paragraph', text: 'Koneksi WebHID dapat terputus karena berbagai alasan: kabel USB longgar, keyboard masuk mode tidur, browser ditutup, atau driver sistem bentrok. Halaman ini menjelaskan prosedur pemulihan.' },
+      { type: 'paragraph', text: 'Koneksi Web Bluetooth dapat terputus karena berbagai alasan: sinyal BLE lemah, keyboard masuk mode tidur, browser ditutup, atau driver sistem bentrok. Halaman ini menjelaskan prosedur pemulihan.' },
       { type: 'steps', items: [
-        'Periksa kabel USB — pastikan terhubung dengan baik ke komputer dan keyboard.',
+        'Periksa status baterai keyboard — pastikan baterai mencukupi dan keyboard dalam mode pairing.',
         'Jika indikator status berubah menjadi "Disconnected", klik tombol "Connect" untuk memulai ulang koneksi.',
-        'Jika keyboard tidak muncul di dialog WebHID, cabut dan colokkan kembali kabel USB.',
+        'Jika keyboard tidak muncul di dialog Bluetooth pairing, matikan dan nyalakan kembali keyboard.',
         'Jika masih tidak terdeteksi, periksa tab "Console" untuk pesan kesalahan.',
         'Sebagai langkah terakhir, muat ulang halaman (F5) dan coba Connect kembali.'
       ]},
       { type: 'notes', items: [
         'Konfigurasi yang sudah di-Save tidak hilang saat koneksi terputus.',
         'Konfigurasi yang hanya di-Apply (belum di-Save) akan hilang jika keyboard kehilangan daya.',
-        'Jika koneksi sering terputus tanpa sebab jelas, periksa kabel USB dan port USB Anda.'
+        'Jika koneksi sering terputus tanpa sebab jelas, periksa sinyal BLE dan pastikan tidak ada interferensi dari perangkat lain.'
       ]},
-      { type: 'warning', title: 'Bootloader', text: 'Jika keyboard masuk mode bootloader (DFU), keyboard tidak akan muncul di dialog WebHID. Untuk keluar dari mode bootloader, cabut USB, tunggu 5 detik, lalu colokkan kembali. Jika masalah berlanjut, gunakan tombol reset fisik di PCB.' }
+      { type: 'warning', title: 'Bootloader', text: 'Jika keyboard masuk mode bootloader (DFU), keyboard tidak akan muncul di dialog Bluetooth pairing. Untuk keluar dari mode bootloader, matikan keyboard, tunggu 5 detik, lalu nyalakan kembali. Jika masalah berlanjut, gunakan tombol reset fisik di PCB.' }
     ]
   },
   {
@@ -295,7 +295,7 @@ export const manualSections: ManualSection[] = [
     summary: 'Panduan mengatasi masalah koneksi Bluetooth LE.',
     keywords: ['BLE', 'bluetooth', 'nirkabel', 'pairing', 'baterai', 'gangguan'],
     blocks: [
-      { type: 'paragraph', text: 'Jika keyboard AirVIA mendukung BLE (Bluetooth Low Energy), Anda mungkin menghadapi masalah koneksi nirkabel. Konfigurasi melalui BLE memerlukan Web Bluetooth API selain WebHID untuk komunikasi data.' },
+      { type: 'paragraph', text: 'Jika keyboard AirVIA mendukung BLE (Bluetooth Low Energy), Anda mungkin menghadapi masalah koneksi nirkabel. Konfigurasi dilakukan melalui Web Bluetooth API untuk komunikasi data.' },
       { type: 'steps', items: [
         'Pastikan baterai keyboard mencukupi — baterai rendah menyebabkan koneksi tidak stabil.',
         'Hapus pairing lama dari pengaturan Bluetooth sistem operasi, lalu pair ulang.',
@@ -343,12 +343,12 @@ export const manualSections: ManualSection[] = [
       { type: 'notes', items: [
         'Tidak ada telemetri, pelacakan, atau analitik yang dikumpulkan.',
         'Definisi V3 dan profil disimpan di sistem berkas lokal Anda — tidak diunggah ke mana pun.',
-        'WebHID hanya mengakses perangkat yang Anda pilih secara eksplisit melalui dialog browser.',
-        'Aplikasi tidak meminta izin selain WebHID (dan Web Bluetooth jika menggunakan BLE).',
+        'Web Bluetooth hanya mengakses perangkat yang Anda pilih secara eksplisit melalui dialog browser.',
+        'Aplikasi tidak meminta izin selain Web Bluetooth.',
         'Kode sumber tersedia terbuka untuk audit mandiri.'
       ]},
       { type: 'steps', items: [
-        'Izin WebHID hanya diminta saat Anda mengklik tombol Connect.',
+        'Izin Web Bluetooth hanya diminta saat Anda mengklik tombol Connect.',
         'Anda dapat mencabut izin kapan saja melalui pengaturan site permissions browser.',
         'Tidak diperlukan akun atau pendaftaran untuk menggunakan aplikasi.'
       ]},
@@ -364,7 +364,7 @@ export const manualSections: ManualSection[] = [
       { type: 'paragraph', text: 'Versi v1.0.0-rc.1 adalah rilis kandidat (Release Candidate) yang telah diverifikasi penuh melalui simulator internal. Meskipun semua fitur berfungsi seperti yang diharapkan di simulator, pengujian pada perangkat keras fisik masih menunggu konfirmasi dari pengguna beta.' },
       { type: 'notes', items: [
         'Semua alur konfigurasi (keymap, encoder, lighting, macro, layout, profil) telah diuji via simulator dan lulus.',
-        'WebHID, Web Bluetooth, dan komunikasi serial telah diuji via simulator loopback.',
+        'Web Bluetooth dan komunikasi serial telah diuji via simulator loopback.',
         'Performa pada perangkat keras nyata mungkin berbeda karena variasi firmware, chip, dan lingkungan.',
         'Fitur-fitur yang bergantung pada kemampuan firmware spesifik (seperti tap-dance lanjutan) mungkin memiliki perbedaan perilaku.',
         'Laporkan masalah yang ditemukan melalui kanal umpan balik yang tersedia.'
