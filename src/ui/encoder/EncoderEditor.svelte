@@ -20,36 +20,36 @@
   }
 </script>
 
-<div class="p-4">
-  <h3 class="text-base font-semibold text-slate-700 mb-3">Encoder Assignment — Layer {activeLayer}</h3>
+<div class="flex flex-col h-full p-4 gap-4 overflow-y-auto">
+  <h3 class="text-sm font-semibold text-text-muted">Encoder Assignment — Layer {activeLayer}</h3>
 
   {#if getEncoderMap() === null}
-    <div class="p-8 text-center text-slate-400 text-sm italic">
+    <div class="flex-1 flex items-center justify-center p-8 text-text-dimmed text-sm italic">
       <p>Configuration is not supported or not loaded for this device</p>
     </div>
   {:else if encoderCount === 0}
-    <p class="text-slate-400 text-sm italic">No encoders defined in V3 definition</p>
+    <p class="text-text-dimmed text-sm italic p-4">No encoders defined in V3 definition</p>
   {:else}
     <div class="space-y-3">
       {#each Array(encoderCount) as _, enc (enc)}
-        <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
-          <div class="text-sm font-medium text-slate-600 mb-2">Encoder {enc}</div>
+        <div class="bg-surface-dark border border-surface-raised rounded-xl p-3">
+          <div class="text-sm font-medium text-text-muted mb-2">Encoder {enc}</div>
           <div class="grid grid-cols-2 gap-3">
             <button
               onclick={() => openPicker(enc, true)}
-              class="flex flex-col items-start gap-1 p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors text-left
-                     {selected?.type === 'encoder' && selected.id === enc && selected.cw ? 'ring-2 ring-blue-500' : ''}"
+              class="flex flex-col items-start gap-1 p-3 bg-surface-dark hover:bg-surface-raised rounded-lg border border-surface-raised transition-colors text-left
+                     {selected?.type === 'encoder' && selected.id === enc && selected.cw ? 'ring-2 ring-accent-cyan' : ''}"
             >
-              <span class="text-xs text-slate-400">CW</span>
-              <span class="text-sm text-slate-700 font-mono">{cwLabel(enc)}</span>
+              <span class="text-xs text-text-dimmed">CW</span>
+              <span class="text-sm text-text-primary font-mono">{cwLabel(enc)}</span>
             </button>
             <button
               onclick={() => openPicker(enc, false)}
-              class="flex flex-col items-start gap-1 p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors text-left
-                     {selected?.type === 'encoder' && selected.id === enc && !selected.cw ? 'ring-2 ring-blue-500' : ''}"
+              class="flex flex-col items-start gap-1 p-3 bg-surface-dark hover:bg-surface-raised rounded-lg border border-surface-raised transition-colors text-left
+                     {selected?.type === 'encoder' && selected.id === enc && !selected.cw ? 'ring-2 ring-accent-cyan' : ''}"
             >
-              <span class="text-xs text-slate-400">CCW</span>
-              <span class="text-sm text-slate-700 font-mono">{ccwLabel(enc)}</span>
+              <span class="text-xs text-text-dimmed">CCW</span>
+              <span class="text-sm text-text-primary font-mono">{ccwLabel(enc)}</span>
             </button>
           </div>
         </div>

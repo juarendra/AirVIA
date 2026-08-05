@@ -6,6 +6,8 @@
 
   let pendingProfile = $state<KeyboardProfile | null>(null);
 
+  const deviceName = $derived(getDeviceName() || 'No device');
+
   function handleExport() {
     const profile: KeyboardProfile = {
       version: 1,
@@ -44,12 +46,39 @@
   }
 </script>
 
-<div class="p-4 border-t border-surface-raised flex gap-2">
-  <button onclick={handleExport} class="px-3 py-1 bg-surface-raised hover:bg-surface-elevated text-sm rounded">Export</button>
-  <label class="px-3 py-1 bg-surface-raised hover:bg-surface-elevated text-sm rounded cursor-pointer">
-    Import
-    <input type="file" accept=".json" onchange={handleImport} class="hidden" />
-  </label>
+<div class="flex flex-col h-full p-4 gap-6 overflow-y-auto">
+  <section class="bg-surface-dark border border-surface-raised rounded-xl p-4 space-y-3">
+    <h2 class="text-sm font-semibold text-text-muted">Current Backup</h2>
+    <div class="flex items-center justify-between">
+      <span class="text-text-primary font-medium">{deviceName}</span>
+    </div>
+    <p class="text-xs text-text-dimmed">
+      Export saves complete current keyboard state — keymap, encoders, lighting, layout options.
+    </p>
+  </section>
+
+  <section class="flex gap-3">
+    <button onclick={handleExport} class="flex-1 px-4 py-3 bg-accent-cyan text-bg-dark text-sm font-medium rounded-xl hover:opacity-90 transition-opacity">
+      Export
+    </button>
+    <label class="flex-1">
+      <span class="block px-4 py-3 bg-surface-raised text-text-primary text-sm font-medium rounded-xl text-center cursor-pointer hover:bg-surface-elevated transition-colors">
+        Import
+      </span>
+      <input type="file" accept=".json" onchange={handleImport} class="hidden" />
+    </label>
+  </section>
+
+  <div class="text-xs text-text-dimmed text-center">
+    Profiles are compatible across firmware versions. Encoder and lighting data preserved when device supports them.
+  </div>
+
+  <section class="bg-surface-dark border border-surface-raised rounded-xl p-4">
+    <h3 class="text-sm font-semibold text-text-muted mb-3">Apply Stored Profile</h3>
+    {#if !pendingProfile}
+      <p class="text-sm text-text-dimmed">Import a profile above to apply it to the connected device.</p>
+    {/if}
+  </section>
 </div>
 
 {#if pendingProfile}

@@ -99,18 +99,18 @@
   const { offset, size } = $derived(slotRange(selectedSlot));
 </script>
 
-<div class="bg-white min-h-0 flex flex-col gap-3 p-4">
-  <div class="text-sm text-slate-500">
+<div class="flex flex-col h-full gap-3 p-4 overflow-y-auto">
+  <div class="text-sm text-text-muted">
     {count} macro{count !== 1 ? 's' : ''} &middot; {totalBytes} bytes total
   </div>
 
   {#if getMacroCount() === null}
-    <div class="flex-1 flex items-center justify-center p-8 text-center text-slate-400 text-sm italic">
+    <div class="flex-1 flex items-center justify-center p-8 text-center text-text-dimmed text-sm italic">
       <p>Configuration is not supported or not loaded for this device</p>
     </div>
   {:else if count === 0}
     <div class="flex-1 flex items-center justify-center">
-      <p class="text-slate-400 text-sm">No macros defined in firmware</p>
+      <p class="text-text-dimmed text-sm">No macros defined in firmware</p>
     </div>
   {:else}
     <div class="flex gap-1 flex-wrap">
@@ -119,50 +119,50 @@
           onclick={() => selectedSlot = i}
           class="rounded-full px-3 py-1 text-xs font-mono transition-colors
                  {i === selectedSlot
-                   ? 'bg-blue-600 text-white shadow-sm'
-                   : 'bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200'}"
+                   ? 'bg-accent-cyan text-bg-dark shadow-sm'
+                   : 'bg-surface-raised text-text-muted hover:text-text-primary hover:bg-surface-elevated'}"
         >
           M{i}
         </button>
       {/each}
     </div>
 
-    <div class="text-xs text-slate-400 font-mono flex justify-between items-center">
+    <div class="text-xs text-text-dimmed font-mono flex justify-between items-center">
       <span>M{selectedSlot} offset: {offset} size: {size}</span>
       {#if isQmkText}
         {#if isEditing}
           <div class="flex gap-2">
-            <button class="px-2 py-1 bg-slate-200 rounded text-slate-700 hover:bg-slate-300" onclick={() => isEditing = false}>Cancel</button>
-            <button class="px-2 py-1 bg-blue-600 rounded text-white hover:bg-blue-700" onclick={saveMacro}>Save</button>
+            <button class="px-2 py-1 bg-surface-raised rounded text-text-muted hover:bg-surface-elevated" onclick={() => isEditing = false}>Cancel</button>
+            <button class="px-2 py-1 bg-accent-cyan rounded text-bg-dark hover:opacity-90" onclick={saveMacro}>Save</button>
           </div>
         {:else}
-          <button class="px-2 py-1 bg-slate-200 rounded text-slate-700 hover:bg-slate-300" onclick={() => { isEditing = true; editContent = macroStrings[selectedSlot] || ''; }}>Edit</button>
+          <button class="px-2 py-1 bg-surface-raised rounded text-text-muted hover:bg-surface-elevated" onclick={() => { isEditing = true; editContent = macroStrings[selectedSlot] || ''; }}>Edit</button>
         {/if}
       {/if}
     </div>
 
     {#if isQmkText}
-      <div class="flex-1 bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col">
+      <div class="flex-1 bg-surface-dark border border-surface-raised rounded-xl overflow-hidden flex flex-col">
         {#if isEditing}
           <textarea
-            class="flex-1 p-3 font-mono text-sm resize-none outline-none"
+            class="flex-1 p-3 font-mono text-sm resize-none outline-none bg-surface-dark text-text-primary placeholder-text-dimmed"
             bind:value={editContent}
             placeholder="Enter macro string..."
           ></textarea>
         {:else}
-          <div class="flex-1 p-3 font-mono text-sm overflow-auto whitespace-pre-wrap">
+          <div class="flex-1 p-3 font-mono text-sm overflow-auto whitespace-pre-wrap text-text-primary">
             {macroStrings[selectedSlot] || '(Empty)'}
           </div>
         {/if}
       </div>
     {:else}
-      <div class="bg-white border border-slate-200 rounded-xl p-3 font-mono text-xs overflow-auto">
-        <div class="grid grid-cols-[auto_repeat(8,1fr)] gap-x-3 gap-y-0.5 text-slate-500">
+      <div class="bg-surface-dark border border-surface-raised rounded-xl p-3 font-mono text-xs overflow-auto">
+        <div class="grid grid-cols-[auto_repeat(8,1fr)] gap-x-3 gap-y-0.5">
           {#each Array(Math.ceil(size / 8)) as _, row}
             {@const rowBytes = buffer.slice(offset + row * 8, offset + row * 8 + 8)}
-            <span class="text-slate-300 select-none">{hexByte(offset + row * 8)}</span>
+            <span class="text-text-dimmed select-none">{hexByte(offset + row * 8)}</span>
             {#each rowBytes as b}
-              <span class="text-blue-600">{hexByte(b)}</span>
+              <span class="text-accent-cyan">{hexByte(b)}</span>
             {/each}
             {#each Array(8 - rowBytes.length) as _}
               <span></span>

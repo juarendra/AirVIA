@@ -18,11 +18,12 @@
     {#each toasts as t (t.id)}
       <div
         role={t.type === 'error' ? 'alert' : 'status'}
-        class="px-4 py-2 rounded-2xl text-white text-sm shadow-lg {t.type === 'success'
-          ? 'bg-green-600'
-          : t.type === 'error'
-            ? 'bg-red-600'
-            : 'bg-blue-600'}"
+        class="px-4 py-2 rounded-xl text-sm shadow-lg border
+          {t.type === 'success'
+            ? 'bg-accent-lime/20 text-accent-lime border-accent-lime/30'
+            : t.type === 'error'
+              ? 'bg-accent-red/20 text-accent-red border-accent-red/30'
+              : 'bg-accent-cyan/20 text-accent-cyan border-accent-cyan/30'}"
       >
         {t.message}
       </div>
