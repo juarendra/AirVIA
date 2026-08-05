@@ -16,6 +16,14 @@ Wireless keyboard configurator for VIA v13 over BLE. Load a V3 JSON definition, 
 4. Wait for synchronization to complete.
 5. Edit your keymap, encoders, or lighting (if supported).
 
+## Manual Pengguna
+
+A complete 17-section user manual in **Indonesian** is embedded in the app under the "Help" group (desktop sidebar) or "Manual Pengguna" tab (mobile bottom bar). The rest of the UI remains in **English**.
+
+The manual is searchable (title, summary, keywords, and body text) and includes a table of contents with section links. It covers quick start, browser setup, definition files, connection, sync status, keymap, encoder, lighting, layout, macros, profiles, save/apply/verify, disconnect recovery, BLE troubleshooting, definition/profile errors, privacy, and RC limitations.
+
+**Manual, definition loading, and profile management work offline and without Web Bluetooth** — only BLE connection features require a supported browser.
+
 ## Privacy and Security
 
 AirVIA is **local-first**. It runs entirely in your browser without a backend.
@@ -49,9 +57,14 @@ pnpm build        # Production build to dist/
 
 ## Browser Support
 
+Web Bluetooth (BLE connection, synchronization, and device writes) requires:
+
 - Chrome 122+
 - Edge 122+
-- (Web Bluetooth API required)
+
+(Web Bluetooth API is not supported in Firefox or Safari.)
+
+The manual, definition loader, and profile manager work in any modern browser — only BLE features are Chrome/Edge-only.
 
 ## License
 
