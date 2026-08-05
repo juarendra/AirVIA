@@ -1,7 +1,7 @@
 <script lang="ts">
   import ConnectBar from './ui/ConnectBar.svelte';
   import TabBar from './ui/TabBar.svelte';
-  import LayerSelector from './ui/keymap/LayerSelector.svelte';
+  import WorkspaceHeader from './ui/layout/WorkspaceHeader.svelte';
   import KeymapGrid from './ui/keymap/KeymapGrid.svelte';
   import KeycodePicker from './ui/keymap/KeycodePicker.svelte';
   import EncoderEditor from './ui/encoder/EncoderEditor.svelte';
@@ -198,8 +198,12 @@
 
     <!-- Main Editor Area -->
     <main class="flex-1 flex flex-col min-w-0 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
-      {#if activeTab === 'keymap' || activeTab === 'encoder'}
-        <LayerSelector />
+      {#if activeTab !== 'manual'}
+        <WorkspaceHeader />
+      {:else}
+        <div class="bg-surface-dark border-b border-surface-raised px-4 py-3 md:px-5 md:py-4">
+          <h1 class="text-base md:text-lg font-bold text-text-primary">Manual Pengguna</h1>
+        </div>
       {/if}
 
       <div class="flex-1 min-h-0">
