@@ -164,16 +164,15 @@ export class BLETransport implements Transport {
     }
 
     this.#clearTimeout();
-    // In our new architecture we don't know the exact timeout of the request here 
-    // unless we retrieve the current request from the queue.
-    // Instead we just use a sensible retry interval (500ms).
-    
+    // Pace retries by the in-flight request's own timeout: retry at most
+    // every 500ms, or sooner for requests that tolerate tighter budgets.
+    const interval = Math.min(500, this.#queue.currentTimeoutMs);
     this.#timeoutId = setTimeout(() => {
       const retried = this.#queue.retry();
       if (retried) {
         this.#_flush();
       }
-    }, 500); // Still retry relatively quickly for reliability
+    }, interval);
   }
 
   #clearTimeout(): void {

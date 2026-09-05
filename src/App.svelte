@@ -19,8 +19,9 @@
 
   import { BLETransport } from './ble/transport';
   import { setTransport } from './ble/dispatch';
-  import { synchronizeDevice } from './device/synchronizer';
+  import { synchronizeDevice, parseDeviceName } from './device/synchronizer';
   import { parseV3Definition } from './core/v3-definition';
+  import { parseU32 } from './core/protocol';
   import { onMount } from 'svelte';
   import {
     getActiveTab,
@@ -39,6 +40,10 @@
     getDefinition,
     setMacroCount,
     setMacroBytes,
+    setMacroBuffer,
+    setLayoutOptions,
+    setLighting,
+    setFirmwareVersion,
     markStale
   } from './store/app.svelte';
 
@@ -74,17 +79,18 @@
     const info = await transport.readInfo();
     if (info) {
       addPacketLog('rx', info);
-      const nameBytes = info.slice(4).filter(b => b !== 0);
-      if (nameBytes.length > 0) {
-        setDeviceName(String.fromCharCode(...nameBytes));
-      }
+      // Info frame layout: [0..3] big-endian u32 firmware version,
+      // [4..] zero-padded device name.
+      if (info.length >= 4) setFirmwareVersion(parseU32(info, 0));
+      const name = parseDeviceName(info);
+      if (name) setDeviceName(name);
     }
 
     try {
       const snapshot = await synchronizeDevice();
       setLayerCount(snapshot.layers);
       setKeymap(snapshot.keymap);
-      
+
       if (snapshot.encoders) {
         setEncoderCount(getDefinition()!.encoders ?? 0);
         setEncoderMap(snapshot.encoders);
@@ -96,10 +102,15 @@
       if (snapshot.macros) {
         setMacroCount(snapshot.macros.count);
         setMacroBytes(snapshot.macros.bytes);
+        setMacroBuffer(snapshot.macros.buffer);
       } else {
         setMacroCount(null);
         setMacroBytes(null);
+        setMacroBuffer(null);
       }
+
+      setLayoutOptions(snapshot.layoutOptions ?? null);
+      setLighting(snapshot.lighting ?? null);
 
       toast('Synchronized', 'success');
     } catch (err) {
