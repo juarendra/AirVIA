@@ -25,11 +25,9 @@ export async function sendViaCommand(packet: RawPacket, timeoutMs = 1000): Promi
   return transport.sendCommand({
     packet,
     timeoutMs,
-    matches: (response: RawPacket) => {
-      if (response.length === 0) return false;
-      if (response[0] === 0xff) return false; // Reject error frames
-      return response[0] === packet[0] || response[0] === 0;
-    },
+    // 0xFF error frames never reach the matcher: the queue rejects the
+    // in-flight request directly. Only same-command frames resolve it.
+    matches: (response: RawPacket) => response.length > 0 && response[0] === packet[0],
     decode: <T>(res: RawPacket) => res as unknown as T,
     resolve: () => {},
     reject: () => {},

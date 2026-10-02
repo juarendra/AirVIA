@@ -83,4 +83,7 @@ export class PacketQueue {
 
   get pendingCount(): number { return this.pending.length; }
   hasInFlight(): boolean { return this.current !== null; }
+
+  /** Timeout of the in-flight request (ms); callers use it to pace retries. */
+  get currentTimeoutMs(): number { return this.current?.timeoutMs ?? 1000; }
 }
