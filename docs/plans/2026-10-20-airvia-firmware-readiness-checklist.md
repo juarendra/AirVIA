@@ -133,6 +133,18 @@ Rencana lama tetap disimpan sebagai sejarah. Dokumen ini menjadi indeks pekerjaa
 | GAP11 | P1 | Terkonfirmasi dokumen: package 1.0.0, README/manual RC; FW experimental; engines APP berbeda dari CI Node22/pnpm11 | RELEASE → P02, R01/R02 |
 | GAP12 | P0 | Bukti belum tersedia: acceptance fisik, durability, otorisasi write BLE, upgrade/rollback dan soak untuk target rilis | QA/HW/INT → S01–S04, T01–T08, R04 |
 
+### Status bench WROOM setelah diagnosis direct-pin
+
+- [x] **WB01 — Root cause matrix dibuktikan dan diperbaiki.** Adapter GPIO ESP32 membalik input sebelum scanner membalik active-low lagi; regresi idle gagal sebelum fix (exit134), lulus setelah fix. Logical idle yang benar `0`, GPIO4–GPIO16 pressed `0x02`. Nilai lama `0x3f/0x3d` hanya bukti perubahan listrik, bukan logical keyboard PASS.
+- [x] **WB02 — Framing generic BLE HID diperbaiki.** HOGP notification 8 byte tanpa report-ID prefix; modifier descriptor E0..E7; test press/release serta jalur GPIO→matrix→keyboard→BLE lulus, termasuk ASan/UBSan. Bukti pada FW `docs/testing/esp32-wroom-2026-10-20.md`.
+- [x] **WB03 — Kandidat keyboard WROOM tanpa strapping GPIO ter-flash.** Rows `{4,19,23,13,14}`, columns `{27,16,17,18,21,22}`; compile flash624135/RAM39660, upload COM39 hash verified, serial ready, BLE1812+FF60 di native identity `24:6F:28:A0:DB:36`. VIA13 dan read-only R0/C1 `0x0011` dibaca dari perangkat nyata; NVS tidak direset.
+- [x] **WB04 — Basic keyboard host smoke (manual user confirmation).** 2026-10-25: pengguna menyatakan change keymap dan key press fisik berfungsi pada fixture WROOM saat ini. Ini bukti manual pengguna, bukan automated source-specific HID trace; posisi/jumlah tombol dan timing key-up tidak dilaporkan. Acceptance semua switch, release/stuck-key, modifier/rollover dan produksi tetap terbuka.
+- [x] **WB05a — Bootstrap OTA tersedia dan ter-flash.** ArduinoOTA berpassword terpisah, serial provisioning/NVS terpisah, host credential Windows; config-parser ASan/UBSan dan tiga host tests PASS. Build flash1226171/RAM64756, upload COM39 hash verified; image MD5 `a1c9d387e755314eccab5cb8b4a047c4`, slot `app0`.
+- [x] **WB05 — Wi-Fi OTA bench end-to-end.** 2026-10-25: SSID `IOTech1`, IP `192.168.1.103`; password salah ditolak (`Authentication Failed`, exit1). Upload `.ino.bin` lewat IP selesai `OTA_UPLOAD_OK`, exit0/54.90s; reboot pindah `app0 -> app1`, image MD5 cocok. Post-OTA VIA13 dan keymap NVS0x0011 tetap benar. Ini smoke transfer image yang sama, bukan sertifikasi migration/power-loss/rollback produksi. Password tidak masuk repo/log/checklist.
+- [x] **WB07 — VIA UI reversible remap smoke.** 2026-10-25 17:44: Chrome Web Bluetooth memilih ESP32 nyata24:6F:28:A0:DB:36; Ready/VIA13/3 layer/90 keycodes. Full180-byte read cocok dengan UI. Picker L0/R0/C1 N0x0011→A0x0004, ACK/readback, Save09_02, reconnect/full sync hanya target itu berubah; encoder/layout tetap. RestoreN, Save, readback semua90 keycodes dan reconnect kedua cocok backup; Ready/0 pending/no page errors. Ini satu kasus bench, bukan100-case remap acceptance, physical typing atau power-cut durability.
+- [ ] **WB06 — Production gates tetap terbuka.** Hentikan sweep semua pin sesuai arahan pengguna; ini tidak menghapus full-matrix, security, durability, reconnect/soak atau sign-off rilis dari backlog.
+
+
 ## 5. Scope, target dan urutan kerja
 
 ### Pendekatan yang dipilih untuk rencana
