@@ -12,6 +12,7 @@
 
   let errorState = $state('');
   let isConnecting = $state(false);
+  let isDisconnecting = $state(false);
 
   const connState = $derived(getConnectionState());
 
@@ -23,6 +24,7 @@
   };
 
   function stateLabel(s: TransportState): string {
+    if (s === 'disconnected') return 'VIA disconnected';
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
 
@@ -52,9 +54,17 @@
     }
   }
 
-  function handleDisconnect() {
-    onDisconnect();
+  async function handleDisconnect() {
+    isConnecting = false;
+    isDisconnecting = true;
     errorState = '';
+    try {
+      await onDisconnect();
+    } catch (error) {
+      errorState = error instanceof Error ? error.message : 'Failed to disconnect VIA';
+    } finally {
+      isDisconnecting = false;
+    }
   }
 </script>
 
@@ -97,7 +107,7 @@
     {#if connState === 'disconnected' || connState === 'error'}
       <button
         onclick={handleConnect}
-        disabled={isConnecting}
+        disabled={isConnecting || isDisconnecting}
         class="flex items-center justify-center p-1.5 bg-surface-raised hover:bg-surface-elevated disabled:opacity-50 rounded-lg text-text-primary transition-colors"
         title="Connect"
       >
@@ -106,6 +116,7 @@
     {:else}
       <button
         onclick={handleDisconnect}
+        disabled={isDisconnecting}
         class="flex items-center justify-center p-1.5 bg-surface-raised text-text-muted hover:text-text-primary hover:bg-surface-elevated rounded-lg transition-colors"
         title="Disconnect"
       >
@@ -181,15 +192,16 @@
       {#if connState === 'disconnected' || connState === 'error'}
         <button
           onclick={handleConnect}
-          disabled={isConnecting}
+          disabled={isConnecting || isDisconnecting}
           class="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-surface-raised hover:bg-surface-elevated disabled:opacity-50 rounded-lg text-text-primary text-sm font-medium transition-colors"
         >
           <Icon name="bluetooth" class="w-4 h-4" />
-          Connect
+          {isDisconnecting ? 'Disconnecting...' : 'Connect'}
         </button>
       {:else}
         <button
           onclick={handleDisconnect}
+          disabled={isDisconnecting}
           class="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-surface-raised text-text-muted hover:text-text-primary hover:bg-surface-elevated rounded-lg text-sm transition-colors"
         >
           <Icon name="disconnect" class="w-4 h-4" />

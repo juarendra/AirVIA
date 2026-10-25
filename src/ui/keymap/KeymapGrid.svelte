@@ -85,11 +85,9 @@
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <div class="p-4 overflow-x-auto min-w-max relative" style="max-height: calc(100dvh - 200px)" onkeydown={handleKeydown} tabindex="0">
     {#if getSyncPhase() !== 'ready'}
-      <div class="absolute inset-0 bg-[#060912]/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-[var(--air-radius-lg)]">
-        <span class="text-[var(--air-text-muted)] font-medium text-sm">
-          {getSyncPhase() === 'syncing' ? getSyncProgress() : 'Connect and sync to edit'}
-        </span>
-      </div>
+      <p role="status" class="mb-3 text-center text-sm text-[var(--air-text-muted)]">
+        {getSyncPhase() === 'syncing' ? getSyncProgress() : 'Connect and sync to edit — last keymap is read-only'}
+      </p>
     {/if}
     <div class="mx-auto" style={containerStyle}>
       {#each positions as pos (pos.row * def.matrix.cols + pos.col)}
@@ -98,11 +96,11 @@
           {@const rx = (pos.rx ?? 0) * CELL}
           {@const ry = (pos.ry ?? 0) * CELL}
           <div style={`${style}transform:rotate(${pos.r}deg);transform-origin:${rx}px ${ry}px`}>
-            <KeymapCell layer={activeLayer} row={pos.row} col={pos.col} />
+            <KeymapCell layer={activeLayer} row={pos.row} col={pos.col} disabled={getSyncPhase() !== 'ready'} />
           </div>
         {:else}
           <div style={style} class="p-0.5">
-            <KeymapCell layer={activeLayer} row={pos.row} col={pos.col} />
+            <KeymapCell layer={activeLayer} row={pos.row} col={pos.col} disabled={getSyncPhase() !== 'ready'} />
           </div>
         {/if}
       {/each}

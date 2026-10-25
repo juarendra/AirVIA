@@ -1,4 +1,4 @@
-// Requires Chrome 122+ with Web Bluetooth API enabled. No automated tests.
+// Requires Chrome 122+ with Web Bluetooth API enabled.
 
 import { type RawPacket, PACKET_SIZE } from '../core/protocol';
 import { PacketQueue } from './queue';
@@ -36,6 +36,12 @@ export class BLETransport implements Transport {
   #infoChar: BluetoothRemoteGATTCharacteristic | null = null;
   #queue = new PacketQueue({ retries: 3, maxDepth: 8 });
   #timeoutId: ReturnType<typeof setTimeout> | null = null;
+  #notificationListener = (evt: Event) => this.#onNotification(evt);
+  #disconnectListener = () => {
+    if (this.#device?.gatt?.connected) return;
+    void this.#cleanup();
+    if (this.#state !== 'error') this.#setState('disconnected');
+  };
 
   get state(): TransportState {
     return this.#state;
@@ -58,47 +64,56 @@ export class BLETransport implements Transport {
       const device = await navigator.bluetooth.requestDevice({
         filters: [{ services: [VIA_SERVICE_UUID] }],
       });
+      if (this.#state !== 'connecting') throw new DOMException('Connection cancelled', 'AbortError');
       this.#device = device;
 
-      device.addEventListener('gattserverdisconnected', () => {
-        this.#queue.clear();
-        this.#clearTimeout();
-        this.#server = null;
-        this.#dataChar = null;
-        this.#infoChar = null;
-        if (this.#state !== 'error') this.#setState('disconnected');
-      });
+      device.addEventListener('gattserverdisconnected', this.#disconnectListener);
 
       const server = await device.gatt!.connect();
+      if (this.#device !== device) throw new DOMException('Connection cancelled', 'AbortError');
       this.#server = server;
 
       const service = await server.getPrimaryService(VIA_SERVICE_UUID);
       this.#infoChar = await service.getCharacteristic(VIA_INFO_CHAR_UUID);
       this.#dataChar = await service.getCharacteristic(VIA_DATA_CHAR_UUID);
+      if (this.#device !== device) throw new DOMException('Connection cancelled', 'AbortError');
 
       await this.#dataChar.startNotifications();
-      this.#dataChar.addEventListener(
-        'characteristicvaluechanged',
-        (evt: Event) => this.#onNotification(evt),
-      );
+      this.#dataChar.addEventListener('characteristicvaluechanged', this.#notificationListener);
 
       await this.#dataChar.readValue();
+      if (this.#device !== device) throw new DOMException('Connection cancelled', 'AbortError');
       this.#setState('connected');
     } catch (err) {
-      await this.#cleanup();
-      this.#setState('error');
+      const cancelled = this.#state === 'disconnected';
+      try {
+        await this.#cleanup();
+      } finally {
+        if (!cancelled) this.#setState('error');
+      }
       throw err;
     }
   }
 
   async #cleanup(): Promise<void> {
+    const device = this.#device;
+    const dataChar = this.#dataChar;
+    this.#device?.removeEventListener('gattserverdisconnected', this.#disconnectListener);
+    this.#dataChar?.removeEventListener('characteristicvaluechanged', this.#notificationListener);
     this.#clearTimeout();
     this.#queue.clear();
-    try { this.#device?.gatt?.disconnect(); } catch { /* already disconnected */ }
     this.#device = null;
     this.#server = null;
     this.#dataChar = null;
     this.#infoChar = null;
+    if (dataChar && device?.gatt?.connected) {
+      try {
+        await dataChar.stopNotifications();
+      } catch (error) {
+        if (device.gatt?.connected) throw error;
+      }
+    }
+    // shortcut: keep OS-shared GATT until page close; restore native disconnect when Windows reconnect is reliable.
   }
 
   async disconnect(): Promise<void> {

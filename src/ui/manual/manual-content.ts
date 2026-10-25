@@ -90,7 +90,7 @@ export const manualSections: ManualSection[] = [
         'Hanya satu keyboard yang dapat tersambung dalam satu waktu.'
       ]},
       { type: 'statuses', items: [
-        { label: 'Disconnected', meaning: 'Belum ada koneksi ke perangkat.', action: 'Klik Connect untuk memulai.' },
+        { label: 'Disconnected', meaning: 'Sesi konfigurasi VIA tidak aktif; koneksi keyboard Windows dapat tetap tersambung.', action: 'Klik Connect untuk membaca ulang keymap.' },
         { label: 'Connecting', meaning: 'Sedang menjalin koneksi.', action: 'Tunggu atau pilih perangkat di dialog.' },
         { label: 'Connected', meaning: 'Koneksi aktif — siap konfigurasi.', action: 'Tidak perlu tindakan.' },
         { label: 'Error', meaning: 'Koneksi gagal.', action: 'Coba ulang atau periksa Console.' }
@@ -274,9 +274,10 @@ export const manualSections: ManualSection[] = [
     keywords: ['disconnect', 'putus', 'pemulihan', 'reconnect', 'driver', 'bluetooth'],
     blocks: [
       { type: 'paragraph', text: 'Koneksi Web Bluetooth dapat terputus karena berbagai alasan: sinyal BLE lemah, keyboard masuk mode tidur, browser ditutup, atau driver sistem bentrok. Halaman ini menjelaskan prosedur pemulihan.' },
+      { type: 'paragraph', text: 'Tombol Disconnect mengakhiri sesi konfigurasi VIA: notifikasi dan request dihentikan, editor menjadi read-only, dan keymap terakhir tetap terlihat. Pada keyboard BLE yang berbagi link HID dengan Windows, koneksi GATT browser dipertahankan agar tidak merusak reconnect. Tutup tab untuk melepas koneksi milik browser; ini tidak menghapus pairing keyboard Windows.' },
       { type: 'steps', items: [
         'Periksa status baterai keyboard — pastikan baterai mencukupi dan keyboard dalam mode pairing.',
-        'Jika indikator status berubah menjadi "Disconnected", klik tombol "Connect" untuk memulai ulang koneksi.',
+        'Saat status "VIA disconnected", klik "Connect" untuk sinkronisasi ulang tanpa memuat ulang halaman atau definition.',
         'Jika keyboard tidak muncul di dialog Bluetooth pairing, matikan dan nyalakan kembali keyboard.',
         'Jika masih tidak terdeteksi, periksa tab "Console" untuk pesan kesalahan.',
         'Sebagai langkah terakhir, muat ulang halaman (F5) dan coba Connect kembali.'

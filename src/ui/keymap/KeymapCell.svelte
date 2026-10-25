@@ -1,7 +1,7 @@
 <script lang="ts">
   import { keycodeAt, getKeycodeLabel, getSelectedTarget, setSelectedTarget } from '../../store/app.svelte';
 
-  let { layer, row, col }: { layer: number; row: number; col: number } = $props();
+  let { layer, row, col, disabled = false }: { layer: number; row: number; col: number; disabled?: boolean } = $props();
 
   const code = $derived(keycodeAt(layer, row, col));
   const fullLabel = $derived(getKeycodeLabel(code));
@@ -32,6 +32,7 @@
 
 <button
   id={`cell-${layer}-${row}-${col}`}
+  {disabled}
   onclick={handleClick}
   onkeydown={handleKeydown}
   tabindex={isSelected ? 0 : -1}

@@ -86,13 +86,17 @@ export function resetDeviceState() {
   setProtocolVersion(0);
   setFirmwareVersion(0);
   setLayerCount(0);
+  setKeymap([]);
+  setActiveLayer(0);
+  setSelectedTarget(null);
   setEncoderCount(0);
   setEncoderMap(null);
   setMacroCount(null);
   setMacroBytes(null);
+  setMacroBuffer(null);
   setLayoutOptions(null);
   setLighting(null);
-  // ponytail: leave layout/definition, clear mapped device values
+  // Keep the loaded definition; discard values belonging to the old device.
   saveState = 'clean';
   pendingChanges = 0;
   editDuringSave = 0;
@@ -150,7 +154,11 @@ export function setLightingSaturation(v: number) { saturation = v; }
 
 export function getSyncPhase(): SyncPhase { return syncPhase; }
 export function setSyncPhase(p: SyncPhase) { syncPhase = p; }
-export function markStale() { syncPhase = 'stale'; }
+export function markStale() {
+  syncPhase = 'stale';
+  syncProgress = '';
+  selectedTarget = null;
+}
 export function getSyncProgress(): string { return syncProgress; }
 export function getDeviceName(): string { return deviceName; }
 export function getProtocolVersion(): number { return protocolVersion; }

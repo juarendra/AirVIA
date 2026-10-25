@@ -31,28 +31,25 @@ describe('Device Identity Guard', () => {
     // Mock the protocol version command to return a version lower than 0x000C
     vi.mocked(sendViaCommand).mockResolvedValueOnce([0x01, 0x00, 0x09]); // Version 9
 
-    await expect(synchronizeDevice()).rejects.toThrow('Unsupported VIA protocol version on device');
+    await expect(synchronizeDevice(new AbortController().signal)).rejects.toThrow('Unsupported VIA protocol version on device');
   });
 
   it('throws an error if getProtocolVersion fails entirely', async () => {
     // Mock the protocol version command to throw an error
     vi.mocked(sendViaCommand).mockRejectedValueOnce(new Error('Network error'));
 
-    await expect(synchronizeDevice()).rejects.toThrow('Failed to verify device compatibility');
+    await expect(synchronizeDevice(new AbortController().signal)).rejects.toThrow('Failed to verify device compatibility');
   });
 
-  it('stores the protocol version after verification', async () => {
-    const { setProtocolVersion } = await import('../store/app.svelte');
+  it('does not resume synchronization after disconnect cancels a pending response', async () => {
+    const controller = new AbortController();
     vi.mocked(sendViaCommand).mockResolvedValueOnce(VERSION_RESP);
-    vi.mocked(sendViaCommand).mockResolvedValueOnce([0x11, 1]);
-    vi.mocked(sendViaCommand).mockResolvedValueOnce([0x12, 0x00, 0x00, 0x08,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
-    vi.mocked(sendViaCommand).mockResolvedValueOnce(LAYOUT_OPTIONS_RESP);
-    vi.mocked(sendViaCommand).mockRejectedValueOnce(new Error('no encoder'));
-    vi.mocked(sendViaCommand).mockRejectedValueOnce(new Error('no lighting'));
-    vi.mocked(sendViaCommand).mockRejectedValue(new Error('no macro'));
-    await synchronizeDevice();
-    expect(setProtocolVersion).toHaveBeenCalledWith(0x000D);
+    vi.mocked(sendViaCommand).mockRejectedValue(new Error('Unexpected command after disconnect'));
+    const pending = synchronizeDevice(controller.signal);
+    const cancelled = expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+    controller.abort();
+    await cancelled;
+    expect(sendViaCommand).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -67,7 +64,7 @@ describe('synchronizeDevice', () => {
 
     // Declared size is 8 but the frame only carries 3 payload bytes.
     vi.mocked(sendViaCommand).mockResolvedValueOnce([0x12, 0x00, 0x00, 0x08, 0x00, 0x01, 0x00]);
-    await expect(synchronizeDevice()).rejects.toThrow('Invalid chunk response');
+    await expect(synchronizeDevice(new AbortController().signal)).rejects.toThrow('Invalid chunk response');
   });
 
   it('fails if chunk offset is out of bounds', async () => {
@@ -76,7 +73,7 @@ describe('synchronizeDevice', () => {
     // Send a response where offset doesn't match the expected offset.
     // The expected offset is 0, let's send 1.
     vi.mocked(sendViaCommand).mockResolvedValueOnce([0x12, 0x00, 0x01, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
-    await expect(synchronizeDevice()).rejects.toThrow('Invalid chunk response');
+    await expect(synchronizeDevice(new AbortController().signal)).rejects.toThrow('Invalid chunk response');
   });
 
   it('fails if chunk is too long for remaining space', async () => {
@@ -86,7 +83,7 @@ describe('synchronizeDevice', () => {
       0x12, 0x00, 0x00, 0x0A, // size 10 (0x0A), but only 8 expected total
       0x00, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00, 0x05, 0x00, 0x06, 0x00, 0x07
     ]);
-    await expect(synchronizeDevice()).rejects.toThrow('Invalid chunk response');
+    await expect(synchronizeDevice(new AbortController().signal)).rejects.toThrow('Invalid chunk response');
   });
 
   it('accepts a full 32-byte chunk frame', async () => {
@@ -106,7 +103,7 @@ describe('synchronizeDevice', () => {
     vi.mocked(sendViaCommand).mockRejectedValueOnce(new Error('no lighting'));
     vi.mocked(sendViaCommand).mockRejectedValue(new Error('no macro'));
 
-    const snapshot = await synchronizeDevice();
+    const snapshot = await synchronizeDevice(new AbortController().signal);
     expect(snapshot.keymap[0]).toBe(0x0004);
     expect(snapshot.layoutOptions).toBe(0);
   });
@@ -127,7 +124,7 @@ describe('synchronizeDevice', () => {
     vi.mocked(sendViaCommand).mockResolvedValueOnce([0x14, 0, 0, 1, 0x00, 0x02]);
     // Macros
     vi.mocked(sendViaCommand).mockRejectedValue(new Error('no macro'));
-    const snapshot = await synchronizeDevice();
+    const snapshot = await synchronizeDevice(new AbortController().signal);
     expect(snapshot.encoders).toEqual([1, 2]);
   });
 
@@ -150,7 +147,7 @@ describe('synchronizeDevice', () => {
     vi.mocked(sendViaCommand).mockResolvedValueOnce([0x08, 0x08, 0x05, 0, 4]); // saturation
 
     vi.mocked(sendViaCommand).mockRejectedValue(new Error('no macro'));
-    const snapshot = await synchronizeDevice();
+    const snapshot = await synchronizeDevice(new AbortController().signal);
     expect(snapshot.lighting).toEqual({ brightness: 100, effect: 1, speed: 2, hue: 3, saturation: 4 });
   });
 
@@ -166,7 +163,7 @@ describe('synchronizeDevice', () => {
     vi.mocked(sendViaCommand).mockRejectedValueOnce(new Error('no encoder'));
     vi.mocked(sendViaCommand).mockRejectedValueOnce(new Error('no lighting'));
     vi.mocked(sendViaCommand).mockRejectedValue(new Error('no macro'));
-    const snapshot = await synchronizeDevice();
+    const snapshot = await synchronizeDevice(new AbortController().signal);
     expect(snapshot.lighting).toBeUndefined();
   });
 
@@ -182,7 +179,7 @@ describe('synchronizeDevice', () => {
     vi.mocked(sendViaCommand).mockRejectedValueOnce(new Error('unsupported'));
     // Macros
     vi.mocked(sendViaCommand).mockRejectedValue(new Error('no macro'));
-    const snapshot = await synchronizeDevice();
+    const snapshot = await synchronizeDevice(new AbortController().signal);
     expect(snapshot.encoders).toBeUndefined();
   });
 });

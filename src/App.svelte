@@ -38,6 +38,8 @@
     setSyncProgress,
     resetDeviceState,
     getDefinition,
+    getProtocolVersion,
+    setProtocolVersion,
     setMacroCount,
     setMacroBytes,
     setMacroBuffer,
@@ -48,6 +50,7 @@
   } from './store/app.svelte';
 
   let transport: BLETransport | null = null;
+  let syncController: AbortController | null = null;
 
   async function handleConnect() {
     if (!getDefinition()) {
@@ -55,39 +58,51 @@
       return;
     }
 
-    transport = new BLETransport();
-    transport.onStateChange = (s) => {
+    const session = new BLETransport();
+    const controller = new AbortController();
+    transport = session;
+    syncController = controller;
+    session.onStateChange = (s) => {
+      if (transport !== session) return;
       setConnectionState(s);
+      if (s === 'connecting') setSyncPhase('connecting');
       if (s === 'disconnected') {
+        controller.abort();
+        syncController = null;
         setTransport(null);
-        // ponytail: mark stale on unexpected disconnects to lock editors, user can reset via ConnectBar later
+        transport = null;
         markStale();
       }
     };
-    transport.onResponse = (pkt) => addPacketLog('rx', pkt);
+    session.onResponse = (pkt) => addPacketLog('rx', pkt);
 
     try {
-      await transport.connect();
+      await session.connect();
     } catch (err) {
+      if (transport !== session) return;
       toast('Connection failed', 'error');
       transport = null;
       return;
     }
 
-    setTransport(transport);
-
-    const info = await transport.readInfo();
-    if (info) {
-      addPacketLog('rx', info);
-      // Info frame layout: [0..3] big-endian u32 firmware version,
-      // [4..] zero-padded device name.
-      if (info.length >= 4) setFirmwareVersion(parseU32(info, 0));
-      const name = parseDeviceName(info);
-      if (name) setDeviceName(name);
-    }
+    if (transport !== session) return;
+    setTransport(session);
 
     try {
-      const snapshot = await synchronizeDevice();
+      const info = await session.readInfo();
+      if (transport !== session) return;
+      if (info) addPacketLog('rx', info);
+
+      const snapshot = await synchronizeDevice(controller.signal);
+      if (transport !== session) return;
+      const protocolVersion = getProtocolVersion();
+      resetDeviceState();
+      setConnectionState('connected');
+      setProtocolVersion(protocolVersion);
+      if (info) {
+        if (info.length >= 4) setFirmwareVersion(parseU32(info, 0));
+        setDeviceName(parseDeviceName(info));
+      }
       setLayerCount(snapshot.layers);
       setKeymap(snapshot.keymap);
 
@@ -112,8 +127,11 @@
       setLayoutOptions(snapshot.layoutOptions ?? null);
       setLighting(snapshot.lighting ?? null);
 
+      setSyncPhase('ready');
+      setSyncProgress('');
       toast('Synchronized', 'success');
     } catch (err) {
+      if (transport !== session) return;
       console.error('Sync failed:', err);
       toast('Sync failed', 'error');
       setSyncPhase('error');
@@ -123,10 +141,14 @@
   }
 
   async function handleDisconnect() {
-    await transport?.disconnect();
-    setTransport(null);
+    const session = transport;
+    syncController?.abort();
+    syncController = null;
     transport = null;
-    resetDeviceState();
+    setTransport(null);
+    setConnectionState('disconnected');
+    markStale();
+    await session?.disconnect();
   }
 
   let fileInput: HTMLInputElement;
@@ -169,13 +191,10 @@
     reader.onload = async () => {
       try {
         const def = parseV3Definition(reader.result as string);
+        await handleDisconnect();
+        resetDeviceState();
         setDefinition(def);
 
-        if (transport) {
-          // Changed def while connected, force disconnect to re-verify matrix
-          toast('Definition changed, disconnecting to re-sync', 'error');
-          await handleDisconnect();
-        }
       } catch (e: unknown) {
         if (e instanceof Error) {
           toast(`Invalid definition: ${e.message}`, 'error');

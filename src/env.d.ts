@@ -1,6 +1,8 @@
 declare class BluetoothRemoteGATTCharacteristic {
   startNotifications(): Promise<void>;
+  stopNotifications(): Promise<void>;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
   writeValueWithoutResponse(data: Uint8Array): Promise<void>;
   readValue(): Promise<DataView>;
   value: DataView | null;
@@ -11,6 +13,7 @@ declare class BluetoothRemoteGATTService {
 }
 
 declare class BluetoothRemoteGATTServer {
+  readonly connected: boolean;
   getPrimaryService(uuid: string): Promise<BluetoothRemoteGATTService>;
   disconnect(): void;
   connect(): Promise<BluetoothRemoteGATTServer>;
@@ -19,6 +22,7 @@ declare class BluetoothRemoteGATTServer {
 interface BluetoothDevice {
   gatt?: BluetoothRemoteGATTServer;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
 }
 
 interface Navigator {
