@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 ### Fixed
+- Configure library-owned VIA macros without host-side playback:
+  `src/core/macros.ts` encodes NUL-separated slots from byte0 and preserves
+  untouched binary programs; `src/device/macros.ts` binds each upload to
+  its session, invalidates the last-byte playback guard, serially writes,
+  commits09_02 and verifies every byte before publishing a snapshot.
+  `src/ble/dispatch.ts` exposes the active transport identity for that guard.
+- `src/ui/macro/MacroEditor.svelte` edits US ASCII text/tab/newline with
+  visible errors and a read-only binary view. Macro Save does not clear
+  unrelated keymap dirty state. `src/core/keycodes.ts` recognizes
+  M0..M127 and `src/ui/keymap/KeycodePicker.svelte` offers only configured
+  slots. `src/device/synchronizer.ts` retains explicit count0 metadata
+  instead of incorrectly displaying unsupported/not-loaded.
+- Tests in `src/core/macros.test.ts`, `src/device/macros.test.ts`,
+  `src/core/keycodes.test.ts` and `src/device/synchronizer.test.ts` cover
+  boundaries, Unicode rejection, binary preservation, failed commit,
+  mismatching readback and changed sessions. Removed obsolete incidental
+  category-count assertions rather than pinning a new registry size.
+  Evidence: full suite24 files/199 tests PASS, type-check0 errors/0 warnings,
+  build144 modules; final guide/check validation recorded in testing evidence.
+  Real rendered UI with explicitly simulated16-slot/512-byte VIA device:
+  selected M0, saved Hello+newline, preserved binary M1, guarded upload,
+  commit/readback matched, and retained one unrelated keymap change.
+  Screenshot `.cooper/artifacts/macro-ui-simulated.png` is local evidence,
+  NOT physical ESP32 macro acceptance. Playback was proven separately in
+  the C++ library consumer; no firmware flash/device keymap write here.
+  `src/ui/manual/manual-content.ts` removes nonexistent Record/New Macro
+  instructions. Impact: app is configuration-only; firmware owns execution.
+  Rollback: prior APP may prepend an empty slot or mishandle dirty state;
+  it is not a safe editor for the new macro format without a backup.
 - Recover the keymap workspace after Disconnect without a page refresh.
   `src/App.svelte` scopes callbacks/results to the active session and
   cancels old synchronization; `src/device/synchronizer.ts` accepts an

@@ -7,6 +7,10 @@ export function setTransport(t: Transport | null) {
   transport = t;
 }
 
+export function getTransport(): Transport | null {
+  return transport;
+}
+
 export async function sendPacket(pkt: RawPacket): Promise<void> {
   if (!transport) throw new Error('Not connected');
   // Fire and forget send is now handled through queue with dummy callbacks to drop wait

@@ -58,7 +58,7 @@ Batas inventaris: pekerjaan yang ditemukan dari kode sekarang, checkpoint studi,
 - [x] **H-A05 — Protocol/version check dan pembacaan snapshot tersedia.** Bukti: APP `src/device/synchronizer.ts`; commit `4a64cb7` untuk jalur perangkat `0x000D` dan merge `b7efd11`. Identity/dimensi bukan otomatis tervalidasi oleh version check.
 - [x] **H-A06 — State koneksi/sync/stale/save tersedia.** Bukti: APP `src/store/app.svelte.ts`; enforcement seluruh write path masih perlu A02/A04.
 - [x] **H-A07 — Editor keymap, layer, dan pemilihan assignment encoder tersedia.** Bukti: APP `src/ui/keymap/`, `src/ui/encoder/EncoderEditor.svelte`; UI assignment tidak membuktikan putaran encoder fisik.
-- [x] **H-A08 — UI lighting, layout, macro dan reset tersedia.** Bukti: APP `src/ui/lighting/LightingPanel.svelte`, `src/ui/layout/LayoutOptions.svelte`, `src/ui/macro/MacroEditor.svelte`, `src/ui/device/DeviceActions.svelte`. Lighting memiliki mismatch terkonfirmasi; macro execution belum tersedia di FW.
+- [x] **H-A08 — UI lighting, layout, macro dan reset tersedia.** Bukti: APP `src/ui/lighting/LightingPanel.svelte`, `src/ui/layout/LayoutOptions.svelte`, `src/ui/macro/MacroEditor.svelte`, `src/ui/device/DeviceActions.svelte`. Baseline macro storage-only kini dilanjutkan implementasi library dan native smoke WB10; penerimaan macro ESP32 fisik belum ditutup.
 - [x] **H-A09 — Profile export/import dan apply serial tersedia.** Bukti: APP `src/store/profile.ts`, `src/ui/profile/ProfileManager.svelte`, `ProfileApplier.svelte`; validasi, dirty/persist dan hasil parsial belum lengkap.
 - [x] **H-A10 — Responsive shell, onboarding, navigasi dan manual Indonesia tersedia.** Bukti: APP `src/App.svelte`, `src/ui/navigation.ts`, `src/ui/manual/`, commit `41755d2`, `35b198e`.
 - [x] **H-A11 — Simulator VIA in-memory tersedia.** Bukti: APP `src/ble/simulator.ts`; tidak terhubung sebagai perangkat produksi dan bukan oracle firmware.
@@ -122,7 +122,7 @@ Rencana lama tetap disimpan sebagai sejarah. Dokumen ini menjadi indeks pekerjaa
 |---|---|---|---|
 | GAP01 | P0 | Terkonfirmasi runtime: lighting channel/offset APP berbeda dari FW; simulator menerima konvensi lain | INT → C03, A05, I01 |
 | GAP02 | P1 | Terkonfirmasi kode: WROOM/S3 membuang encoder delta; remap map tidak menghasilkan aksi encoder fisik | FW → F04 |
-| GAP03 | P1 | Terkonfirmasi kode: macro FW storage-only, APP memberi editor teks; zero count dan unsupported perlu dibedakan | INT → F06, A08 |
+| GAP03 | P1 | Library macro runtime, migrasi dan editor format benar sudah lulus native/UI fixture; image WROOM16/512 belum di-flash dan physical macro/power-cycle belum diterima | INT → F06, A08, WB10b |
 | GAP04 | P0 | Terkonfirmasi kode: profile parser minim validasi; apply bisa partial, tidak commit/verify dan tidak menandai dirty di jalur apply | APP → A07 |
 | GAP05 | P0 | Terkonfirmasi kontrak: FF62 hanya version/name; version check bukan VID/PID/matrix identity check | INT → C04, A02/A03 |
 | GAP06 | P0 | Perlu pembuktian: response hanya cocok berdasarkan command; timeout exhaustion tidak memanggil flush request berikutnya; race notify/write completion dan late response | APP → A01 |
@@ -147,6 +147,8 @@ Rencana lama tetap disimpan sebagai sejarah. Dokumen ini menjadi indeks pekerjaa
 - [x] **WB08b — Discovery/coexistence setelah koneksi pertama.** Shared `onConnect` kini restart advertising selama slot masih tersedia. Regresi visibility gagal sebelum fix(exit134), dua urutan koneksi/batas kapasitas lulus sesudah. Image MD5 `53591b7c2a6461333555c7e2bede3777` di-OTA, app1/build1226267/RAM64764. Windows paired=true/connected=true tetap menerima adv1812+FF60; Chrome chooser nyata memilihMAC24:6F:28:A0:DB:36, UI Ready/VIA13/3 layers/0 changes saat Windows Keyboard/HIDClass StatusOK. Readback90 keys cocok snapshot terakhir, tanpa write/reset/unpair; fresh pre-update read sempat AccessDenied, jadi bukan bukti fresh pre/post pada update ini.
 - [x] **WB09 — VIA-session Disconnect/reconnect tanpa refresh.** Koreksi callback/listener sesi lama, AbortSignal sync, unsubscribe FF61 dan snapshot read-only. Native GATT browser tetap hidup untuk link bersama keyboard Windows; UI "VIA disconnected" dan manual menjelaskan, bukan klaim putus Bluetooth fisik. Bukti actual Chrome/WROOM:2 siklus tanpa reload dengan marker tetapf71efd9e, semua90 codes sama(SHA25683f38364...), offline disabled/read-only lalu Ready/VIA13/0 changes.22 files/192 tests, type-check0 error/0 warning, build PASS. Artefak APP `.cooper/artifacts/airvia-disconnect-evidence.json` dan2 screenshot. Tidak ada write keymap/reset/flash.
 - [ ] **WB09b — Full native GATT close/reopen dan handoff aplikasi lain.** Windows native reconnect sempat resolve tetapi getPrimaryService tertahan; solusi WB09 adalah teardown sesi VIA saja. Independent Bleak FF61 access saat browser memegang GATT gagal; reconnect AirVIA ketiga lulus tetapi bukan handoff PASS. Setelah tab AirVIA benar-benar ditutup, independent client berhasil VIA13/read180bytes dengan SHA256 sama dan Windows paired=true. Pelepasan lewat tab-close terbukti; kualifikasi native close/reopen pada halaman yang sama, handoff tanpa menutup tab dan reconnect soak tetap terbuka. Jangan menyamakan status VIA disconnected dengan link browser sudah dilepas.
+- [x] **WB10 — Macro milik library, implementasi/native/build.** `via::Keyboard`/`VIA_Macro.h` mengeksekusi M0..M127, US ASCII, HID tap/down/up dan delay bounded; sketch hanya konfigurasi. WROOM16slots/512bytes; migrasi CRC-valid record lama menjaga keymap/encoder/layout/custom. Bukti11 native suites/6 sanitizer suites/3 host tests dan consumer library: VIA upload/commit/reload → matrix M0 → A/a/Ctrl+C/delay/!/Enter, physicalB tetap; final consumer OK! juga clean. Shared HID-loss cancels tanpa replay saat VIA peer tetap terhubung. Build core3.3.0/NimBLE2.5.1 flash1228811/RAM65844; hash final ada di FW testing evidence/manifest, image tidak di-flash. Uno self-test compile9444/RAM801 PASS. APP24files/199tests/typecheck/build PASS; actual rendered UI dengan device simulasi memilih M0, menyimpan teks tanpa NUL pembuka, menjaga binaryM1 dan satu dirty keymap. Bukan physical macro PASS.
+- [ ] **WB10b — Penerimaan macro WROOM fisik.** Backup keymap, flash image baru secara aman, pastikan16/512 dan semua90 keycodes lama tetap, program M0 dan tekan GPIO fixture saat AirVIA Connected maupun tab tertutup. Uji key-up/cancel/reconnect HID, Caps Lock/layout US, save/hard power-cycle dan rollback dari backup. Firmware zero-macro lama tidak bisa membaca payload yang sudah diperbesar; jangan erase NVS otomatis.
 - [ ] **WB06 — Production gates tetap terbuka.** Hentikan sweep semua pin sesuai arahan pengguna; ini tidak menghapus full-matrix, security, durability, reconnect/soak atau sign-off rilis dari backlog.
 
 
@@ -293,11 +295,11 @@ Urutan dependensi: **P01/P02 + C01–C05 + desain S01 → G0 → F01–F07 dan A
 
 ### F06 — Macro end-to-end [INT, P1]
 
-**Files:** FW `src/VIA_Protocol.*`, `VIA_Keycodes.h`, `VIA_Keyboard.*`; APP `src/ui/macro/MacroEditor.svelte`, `src/core/keycodes.ts`; protocol/keyboard tests.
+**Files:** FW `src/VIA_Protocol.*`, `src/VIA_Macro.h`, `src/VIA_Keycodes.h`, `src/VIA_Keyboard.*`, `tests/macro_test.cpp`, `tests/macro_storage_test.cpp`; APP `src/ui/macro/MacroEditor.svelte`, `src/core/macros.ts`, `src/device/macros.ts`, `src/core/keycodes.ts`.
 
-- [ ] Tetapkan format macro yang benar-benar didukung dan keycode trigger; minimal perilaku teks yang diminta produk, bukan klaim semua opcode QMK tanpa implementasi.
-- [ ] Implementasikan runner non-blocking dan bounded, memakai jalur HID yang sama; validasi terminator/length/opcode sebelum eksekusi, cancel/release saat disconnect/suspend.
-- [ ] Uji slot kosong/terakhir, buffer penuh, malformed/truncated data, unsupported opcode dan tombol matrix bersamaan; jangan membaca keluar buffer atau memproduksi key yang tertahan.
+- [x] Tetapkan format dan trigger — QMK/VIA NUL-separated mulai byte0, M0..M127, US ASCII, tap/down/up HID dasar/modifier dan decimal delay0..65535ms dengan terminator `|`. API dan manual membatasi klaim opcode/Unicode; WROOM16/512.
+- [x] Runner library non-blocking/bounded dan jalur HID ACK/retry terintegrasi; complete-slot validation, cancel/release saat revision/disconnect/suspend. Native/shared HID peer-loss dan standalone consumer PASS, bukan sertifikasi radio semua board.
+- [x] Native tests/sanitizers menutup slot kosong/terakhir, buffer tanpa terminator, unsupported/truncated opcode, overflow delay, timer wrap, rejection/completion, physical conflict/6KRO, chord dan cancel. Physical acceptance tetap WB10b/T04.
 - [ ] Bila target rilis tidak menjanjikan macro execution, tampilkan storage diagnostic/read-only dan label batasnya. Mengeluarkan macro dari fitur rilis yang sebelumnya disepakati harus disetujui, bukan auto-centang item ini.
 
 ### F07 — BLE/USB lifecycle dan battery/sleep integration [FW, P0/P1]
@@ -386,9 +388,9 @@ Urutan dependensi: **P01/P02 + C01–C05 + desain S01 → G0 → F01–F07 dan A
 
 **Files:** APP `src/ui/macro/MacroEditor.svelte`, synchronizer/protocol/store, keycode picker.
 
-- [ ] Bedakan count0, unsupported, raw diagnostic dan supported editable format; jangan menganggap leading NUL sebagai standar tanpa kontrak F06.
-- [ ] Editor memvalidasi encoding, terminator, byte capacity dan seluruh slot; chunk write dipadukan dengan ACK/failure/dirty/commit/readback, bukan langsung `markSaved()`.
-- [ ] Bila runner target siap, sediakan trigger assignment yang benar dan uji hasil pengetikan. Bila runner belum siap, editor executable tidak diklaim didukung; keputusan scope dicatat di P01.
+- [ ] Count0 sekarang eksplisit dan plain-text/binary read-only dibedakan tanpa leading NUL; masih bedakan timeout/load failure dari unsupported response di optional-feature catch sebelum klaim hardening lengkap.
+- [x] Editor memvalidasi US ASCII/terminator/capacity/slot, menjaga binary slot lain, memakai last-byte upload guard, ACK/commit/readback dan session identity; tidak `markSaved()` untuk menghapus dirty keymap lain. Unit tests dan actual rendered UI fixture PASS.
+- [ ] M0..M15 assignment WROOM tersedia dan lulus UI fixture; output native HID library PASS. Hasil penekanan tombol ESP32 fisik setelah flash dan persist/reboot masih WB10b, bukan disamakan dengan fixture.
 
 ### A09 — Draft dan disconnect recovery [APP, P1]
 

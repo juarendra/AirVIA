@@ -1,6 +1,6 @@
 <script lang="ts">
   import Modal from '../shared/Modal.svelte';
-  import { getSelectedTarget, setSelectedTarget, setKeycodeAt, setEncoderKeycode, markDirty } from '../../store/app.svelte';
+  import { getSelectedTarget, setSelectedTarget, setKeycodeAt, setEncoderKeycode, markDirty, getMacroCount } from '../../store/app.svelte';
   import { KEYCODES_BY_CATEGORY, CATEGORY_LABELS, type KeycodeEntry, type KeycodeCategory } from '../../core/keycodes';
   import { Protocol } from '../../core/protocol';
   import { sendViaCommand } from '../../ble/dispatch';
@@ -10,7 +10,7 @@
 
   const selectedTarget = $derived(getSelectedTarget());
 
-  const allEntries = $derived(Object.values(KEYCODES_BY_CATEGORY).flat());
+  const allEntries = $derived(Object.values(KEYCODES_BY_CATEGORY).flat().filter(isAvailable));
 
   const filteredEntries = $derived.by(() => {
     const q = search.toLowerCase().trim();
@@ -21,15 +21,19 @@
     );
   });
 
-  const categoryEntries = $derived(KEYCODES_BY_CATEGORY[activeCategory]);
+  const categoryEntries = $derived(KEYCODES_BY_CATEGORY[activeCategory].filter(isAvailable));
 
   const isSearching = $derived(search.trim().length > 0);
 
   const categories = Object.keys(CATEGORY_LABELS) as KeycodeCategory[];
 
+  function isAvailable(entry: KeycodeEntry): boolean {
+    return entry.category !== 'macro' || entry.code - 0x7700 < (getMacroCount() ?? 0);
+  }
+
   async function select(entry: KeycodeEntry) {
     const target = selectedTarget;
-    if (!target) return;
+    if (!target || !isAvailable(entry)) return;
     
     // Close modal first for responsiveness
     setSelectedTarget(null);

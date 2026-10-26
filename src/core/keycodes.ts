@@ -13,6 +13,7 @@ export enum KeycodeType {
   Modifier = 3,
   Layer = 4,
   Boot = 5,
+  Macro = 6,
   Unsupported = 0xFF,
 }
 
@@ -24,6 +25,7 @@ export function classifyKeycode(code: number): KeycodeType {
   if (code >= 0x0100 && code < 0x2000) return KeycodeType.Modifier;
   if ((code & 0xFF00) === 0x5200) return KeycodeType.Layer;
   if (code === 0x7C00) return KeycodeType.Boot;
+  if (code >= 0x7700 && code <= 0x777F) return KeycodeType.Macro;
   return KeycodeType.Unsupported;
 }
 
@@ -149,6 +151,10 @@ function buildEntries(): KeycodeEntry[] {
     for (let n = 0; n < 32; n++) {
       e.push({ code: 0x5200 | (action << 5) | n, label: `${prefix}(${n})`, category: 'layer' });
     }
+  }
+
+  for (let slot = 0; slot < 128; slot++) {
+    e.push({ code: 0x7700 + slot, label: `M${slot}`, category: 'macro' });
   }
 
   e.push({ code: 0x7C00, label: 'QK_BOOT', category: 'boot' });

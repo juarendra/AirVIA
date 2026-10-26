@@ -177,6 +177,8 @@ export async function synchronizeDevice(signal: AbortSignal): Promise<DeviceSnap
       }
 
       snapshot.macros = { count, bytes, buffer };
+    } else {
+      snapshot.macros = { count: 0, bytes: 0, buffer: [] };
     }
   } catch {
     signal.throwIfAborted();

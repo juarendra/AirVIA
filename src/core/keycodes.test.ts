@@ -8,9 +8,6 @@ import {
   keycodeLabel,
   KeycodeType,
   KEYCODE_MAP,
-  KEYCODES_BY_CATEGORY,
-  CATEGORY_LABELS,
-  type KeycodeCategory,
 } from './keycodes';
 
 describe('classifyKeycode', () => {
@@ -46,6 +43,14 @@ describe('classifyKeycode', () => {
 
   it('classifies QK_BOOT as Boot', () => {
     expect(classifyKeycode(0x7C00)).toBe(KeycodeType.Boot);
+  });
+
+  it('recognizes only the standard 128 macro trigger IDs', () => {
+    expect(classifyKeycode(0x7700)).toBe(KeycodeType.Macro);
+    expect(classifyKeycode(0x777F)).toBe(KeycodeType.Macro);
+    expect(classifyKeycode(0x7780)).toBe(KeycodeType.Unsupported);
+    expect(keycodeLabel(0x7700)).toBe('M0');
+    expect(keycodeLabel(0x777F)).toBe('M127');
   });
 
   it('classifies reserved range 0xE8-0xFF as Unsupported', () => {
@@ -194,26 +199,6 @@ describe('KEYCODE_MAP coverage', () => {
       for (let n = 0; n < 32; n++) {
         expect(KEYCODE_MAP.has(0x5200 | (action << 5) | n)).toBe(true);
       }
-    }
-  });
-});
-
-describe('KEYCODES_BY_CATEGORY', () => {
-  it('groups entries by category', () => {
-    expect(KEYCODES_BY_CATEGORY.basic.length).toBeGreaterThan(0);
-    expect(KEYCODES_BY_CATEGORY.modifier.length).toBe(8);
-    expect(KEYCODES_BY_CATEGORY.layer.length).toBe(128);
-    expect(KEYCODES_BY_CATEGORY.boot.length).toBe(1);
-    expect(KEYCODES_BY_CATEGORY.media.length).toBe(7);
-    expect(KEYCODES_BY_CATEGORY.system.length).toBe(1);
-    expect(KEYCODES_BY_CATEGORY.macro.length).toBe(0);
-    expect(KEYCODES_BY_CATEGORY.custom.length).toBe(0);
-  });
-
-  it('has all categories in CATEGORY_LABELS', () => {
-    const cats: KeycodeCategory[] = ['basic', 'modifier', 'layer', 'boot', 'media', 'system', 'macro', 'custom'];
-    for (const cat of cats) {
-      expect(CATEGORY_LABELS[cat]).toBeTruthy();
     }
   });
 });

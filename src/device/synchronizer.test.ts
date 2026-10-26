@@ -101,11 +101,12 @@ describe('synchronizeDevice', () => {
     vi.mocked(sendViaCommand).mockResolvedValueOnce(LAYOUT_OPTIONS_RESP);
     vi.mocked(sendViaCommand).mockRejectedValueOnce(new Error('no encoder'));
     vi.mocked(sendViaCommand).mockRejectedValueOnce(new Error('no lighting'));
-    vi.mocked(sendViaCommand).mockRejectedValue(new Error('no macro'));
+    vi.mocked(sendViaCommand).mockResolvedValueOnce([0x0C, 0]);
 
     const snapshot = await synchronizeDevice(new AbortController().signal);
     expect(snapshot.keymap[0]).toBe(0x0004);
     expect(snapshot.layoutOptions).toBe(0);
+    expect(snapshot.macros).toEqual({ count: 0, bytes: 0, buffer: [] });
   });
 
   it('reads encoders if supported', async () => {

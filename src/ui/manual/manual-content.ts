@@ -206,22 +206,24 @@ export const manualSections: ManualSection[] = [
     id: 'macro',
     title: 'Macro',
     summary: 'Membuat dan mengelola urutan makro.',
-    keywords: ['macro', 'makro', 'urutan', 'rekam', 'otomatis', 'perintah'],
+    keywords: ['macro', 'makro', 'urutan', 'teks', 'm0', 'firmware'],
     blocks: [
-      { type: 'paragraph', text: 'Macro Editor memungkinkan Anda merekam dan mengedit urutan penekanan tombol yang dapat dipicu dengan satu tombol. Macro mendukung penundaan (delay), kombinasi tombol, dan teks yang diketik otomatis.' },
+      { type: 'paragraph', text: 'Macro dijalankan oleh library VIA-Arduino di keyboard, bukan oleh AirVIA. Aplikasi hanya membaca, mengedit, dan menyimpan konfigurasi; keyboard tetap dapat menjalankan macro setelah tab AirVIA ditutup.' },
       { type: 'steps', items: [
-        'Buka tab "Macro" dari bilah navigasi.',
-        'Klik "New Macro" untuk membuat macro baru.',
-        'Beri nama macro yang deskriptif, misalnya "Buka Email" atau "Screenshot".',
-        'Klik "Record" dan ketik urutan tombol yang diinginkan. Klik "Stop" saat selesai.',
-        'Anda juga dapat mengedit urutan secara manual: tambah, hapus, atau ubah keycode per langkah.',
-        'Klik "Apply" untuk menyimpan macro ke keyboard.',
-        'Untuk menggunakan macro, tetapkan macro tersebut ke tombol melalui Keymap Editor.'
+        'Gunakan firmware yang mengaktifkan macro. Contoh WROOM menyediakan 16 slot M0–M15 dengan kapasitas bersama 512 byte; firmware lama dengan count 0 harus diperbarui terlebih dahulu.',
+        'Buka tab "Macros", pilih M0 atau slot lain, lalu klik "Edit".',
+        'Masukkan teks US ASCII; tab dan baris baru didukung. Editor ini tidak menyediakan Record, New Macro, atau penamaan slot.',
+        'Klik "Save" di panel Macro. Aplikasi memasang guard upload, mengirim buffer, melakukan commit, dan memverifikasi readback seluruh buffer. Jika gagal, perhatikan pesan error; jangan menganggap data sudah tersimpan.',
+        'Buka Keymap Editor, pilih tombol, lalu pilih M0 dari kategori Macro. Hanya slot yang disediakan firmware yang ditawarkan.',
+        'Klik "Save to Device" untuk menyimpan assignment keymap. Save pada panel Macro tidak menghapus indikator perubahan keymap lain.',
+        'Tekan tombol fisik yang dipetakan. Library firmware menjalankan urutan HID; penerimaan tombol fisik dan power-cycle harus diuji pada perangkat setelah firmware baru di-flash.'
       ]},
       { type: 'notes', items: [
-        'Jumlah macro maksimal dan panjang setiap macro bergantung pada firmware keyboard.',
-        'Macro dapat menyertakan penundaan (delay) antar langkah dalam milidetik.',
-        'Gunakan macro untuk otomatisasi alur kerja seperti membuka aplikasi, memasukkan teks berulang, atau shortcut kompleks.'
+        'Format buffer adalah slot berurutan berakhiran NUL, dimulai M0 pada byte 0, tanpa NUL pembuka tambahan. Slot urutan tombol biner ditampilkan read-only dan dipertahankan saat slot teks lain diedit.',
+        'Library mendukung tap/down/up untuk keycode HID dasar/modifier dan delay 0–65535 ms. Editor teks tidak membuat urutan biner tersebut; Unicode dan semua opcode QMK tidak diklaim didukung.',
+        'Satu macro aktif; trigger lain saat busy diabaikan dan tombol yang ditahan tidak mengulang. Disconnect host HID, suspend, edit/reset buffer, atau pembatalan menghentikan macro dan melepas tombol miliknya.',
+        'Teks memakai layout host US; Caps Lock dan modifier fisik dapat memengaruhi hasil. Tombol fisik yang bentrok atau kapasitas 6KRO penuh dapat menunda playback.',
+        'Backup keymap sebelum update firmware. Library memigrasikan record lama tanpa macro, tetapi firmware lama tidak bisa membaca record yang sudah diperbesar; rollback perlu image kompatibel atau pemulihan backup.'
       ]}
     ]
   },
