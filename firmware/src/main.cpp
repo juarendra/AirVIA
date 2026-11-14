@@ -369,7 +369,7 @@ void scanButtons(uint32_t now) {
     }
   }
 
-  if (joyHeld && now - joyPressedAt >= activeConfig.settings.holdMs) pressCadShift();
+  if (joyHeld && (encoderHeld || now - joyPressedAt >= activeConfig.settings.holdMs)) pressCadShift();
   else releaseCadShift();
   if (cadShiftActive && encoderHeld) pressCadMiddle(false);
   if (!encoderHeld || (!cadMiddleFromMotion && !cadShiftActive)) releaseCadMiddle();
