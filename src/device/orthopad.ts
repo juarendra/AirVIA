@@ -87,7 +87,7 @@ export function defaultOrthoPadConfig(): OrthoPadConfig {
       centerX: 512,
       centerY: 512,
       deadzone: 30,
-      speedMilli: 50,
+      speedMilli: 8,
       curveMilli: 500,
       invertX: false,
       invertY: false,

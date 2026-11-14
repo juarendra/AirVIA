@@ -183,7 +183,7 @@ Konfigurasi EEPROM lama tidak otomatis berubah; pilih **Restore defaults** atau 
 - `1000`: respons linear.
 - Di bawah `1000`: gerakan awal lebih halus.
 - Di atas `1000`: gerakan awal lebih agresif.
-- Default firmware/AirVIA sekarang `Speed=50`, `Curve=500` untuk kontrol lebih lambat dan halus.
+- Default firmware/AirVIA sekarang `Speed=8`, `Curve=500`, polling `20 ms` untuk kontrol lebih lambat dan halus.
 
 ### Invert X/Y
 

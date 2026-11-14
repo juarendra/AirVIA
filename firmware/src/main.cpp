@@ -20,7 +20,7 @@ constexpr uint8_t ButtonPins[ButtonCount + 2] = {
   Button1, Button2, Button3, Button4, Button5, JoySwitch, EncoderSwitch,
 };
 constexpr uint16_t DebounceMs = 8;
-constexpr uint16_t JoystickPollMs = 50;
+constexpr uint16_t JoystickPollMs = 20;
 constexpr uint16_t MaxFrame = 2 + 7 + MaxPayload + 2;
 constexpr uint16_t StorageMagic = 0x4f50;
 constexpr uint16_t StorageSlotSize = 256;

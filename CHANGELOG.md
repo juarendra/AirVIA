@@ -19,6 +19,7 @@
 - Joystick switch now starts Fusion orbit directly; encoder switch starts pan during joystick movement.
 - Joystick default tuning lowered to `Speed=150`, `Curve=700`, `Deadzone=30` for slower and smoother Fusion control.
 - Joystick speed/curve defaults reduced again to `Speed=50`, `Curve=500` after Fusion validation.
+- Joystick polling raised to 50 Hz and speed reduced to `8` for finer Fusion movement steps.
 ### Verification
 - `svelte-check`, `tsc --noEmit`, and Vitest: 24 files, 205 tests passed.
 - Firmware encoder regression logic check passed; native test execution requires a local GCC toolchain.
