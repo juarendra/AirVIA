@@ -1,8 +1,9 @@
-export type AppDestination = 'keymap' | 'encoder' | 'lighting' | 'macros' | 'profiles' | 'layout' | 'actions' | 'console' | 'manual';
+export type AppDestination = 'orthopad' | 'keymap' | 'encoder' | 'lighting' | 'macros' | 'profiles' | 'layout' | 'actions' | 'console' | 'manual';
 
 export type DestinationItem = { id: AppDestination; label: string; icon: string; title: string; description: string };
 
 const META: Record<AppDestination, Pick<DestinationItem, 'label' | 'icon' | 'title' | 'description'>> = {
+  orthopad: { label: 'OrthoPad', icon: 'settings', title: 'OrthoPad CAD Configurator', description: 'Configure OrthoPad over USB' },
   keymap: { label: 'Keymap', icon: 'keyboard', title: 'Keymap Editor', description: 'Assign keycodes to each key on the matrix' },
   encoder: { label: 'Encoder', icon: 'settings', title: 'Encoder Configuration', description: 'Configure rotary encoder actions' },
   lighting: { label: 'Lighting', icon: 'sun', title: 'Lighting Control', description: 'Adjust brightness, effect, and color' },
@@ -15,7 +16,7 @@ const META: Record<AppDestination, Pick<DestinationItem, 'label' | 'icon' | 'tit
 };
 
 export const navigationGroups = [
-  { label: 'Configure', items: ['keymap', 'encoder', 'lighting', 'macros'] },
+  { label: 'Configure', items: ['orthopad', 'keymap', 'encoder', 'lighting', 'macros'] },
   { label: 'Workspace', items: ['profiles', 'layout'] },
   { label: 'Advanced', items: ['actions', 'console'] },
   { label: 'Help', items: ['manual'] },
@@ -29,6 +30,6 @@ export function destinationById(id: AppDestination): DestinationItem | undefined
 const resolve = (ids: AppDestination[]): DestinationItem[] =>
   ids.map(id => destinationById(id)!).filter(Boolean);
 
-export const primaryMobileDestinations: DestinationItem[] = resolve(['keymap', 'encoder', 'lighting', 'macros', 'manual']);
+export const primaryMobileDestinations: DestinationItem[] = resolve(['orthopad', 'keymap', 'encoder', 'manual']);
 
 export const advancedMobileDestinations: DestinationItem[] = resolve(['profiles', 'layout', 'actions', 'console']);

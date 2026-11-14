@@ -28,12 +28,12 @@ describe('TabBar', () => {
     expect(activeBtn!.textContent).toContain('Keymap');
   });
 
-  it('renders 5 primary mobile buttons', () => {
+  it('renders primary mobile buttons and More', () => {
     const { container } = render(TabBar);
     const primaryNav = container.querySelector('[aria-label="Primary navigation"]');
     expect(primaryNav).toBeTruthy();
     const buttons = primaryNav!.querySelectorAll('button');
-    expect(buttons.length).toBe(6);
+    expect(buttons.length).toBe(5);
   });
 
   it('opens Advanced sheet', async () => {
