@@ -15,7 +15,7 @@ pio run -e diagnostic
 pio run -e promicro5v -t upload
 ```
 
-Board baseline: `sparkfun_promicro16`. Verifikasi board clone dan upload port sebelum flashing.
+Board baseline: `sparkfun_promicro16`. USB product descriptor: `OrthoPad`. Verifikasi board clone dan upload port sebelum flashing.
 
 ## Modes
 
