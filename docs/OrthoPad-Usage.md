@@ -109,6 +109,8 @@ Monitor menampilkan:
 - Logical `JOY_X` membaca pin fisik `A2`; logical `JOY_Y` membaca pin fisik `A1`.
 - Layer aktif.
 
+Dot monitor mengikuti arah output efektif setelah Invert X/Y. Kartu raw X/Y tetap menunjukkan ADC asli agar diagnosis sensor tidak tertukar dengan arah HID.
+
 ### Pemeriksaan normal
 
 Saat joystick dilepas:

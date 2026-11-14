@@ -23,7 +23,11 @@
   const rawX = $derived(sample?.rawX ?? 512);
   const centerX = $derived(config?.settings.centerX ?? 512);
   const centerY = $derived(config?.settings.centerY ?? 512);
-  const deadzone = $derived(config?.settings.deadzone ?? 100);
+  const deadzone = $derived(config?.settings.deadzone ?? 30);
+  const invertX = $derived(config?.settings.invertX ?? false);
+  const invertY = $derived(config?.settings.invertY ?? false);
+  const effectiveX = $derived(invertX ? centerX - (rawX - centerX) : rawX);
+  const effectiveY = $derived(invertY ? centerY - (rawY - centerY) : rawY);
   let visualX = $state(512);
   let visualY = $state(512);
   let animationX = 512;
@@ -78,8 +82,8 @@
     lastEncoderSteps = current;
   });
   $effect(() => {
-    const targetX = rawX;
-    const targetY = rawY;
+    const targetX = effectiveX;
+    const targetY = effectiveY;
     let stopped = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let currentX = animationX;
@@ -143,7 +147,8 @@
         <span class="inline-block h-2 w-2 rounded-full {connectionState === 'connected' && sample ? 'bg-accent-lime animate-pulse' : 'bg-text-dimmed'}"></span>
         <h2 id="joystick-monitor-title" class="font-semibold text-text-primary">Joystick monitor</h2>
       </div>
-      <p class="mt-1 text-xs text-text-muted">Live raw ADC telemetry untuk memeriksa center, deadzone, drift, dan switch.</p>
+      <p class="mt-1 text-xs text-text-muted">Dot mengikuti output efektif; kartu X/Y tetap raw ADC untuk diagnosis.</p>
+      <p class="mt-1 text-[0.65rem] text-text-dimmed">X {invertX ? 'inverted' : 'normal'} · Y {invertY ? 'inverted' : 'normal'}</p>
     </div>
     <div class="text-right text-xs text-text-muted">
       <div>{connectionState === 'connected' ? '20 samples/sec · smoothed' : 'Not connected'}</div>
