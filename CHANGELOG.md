@@ -5,7 +5,7 @@
 - OrthoPad Web Serial configurator in `src/App.svelte`, `src/serial/transport.ts`, `src/device/orthopad.ts`, `src/store/orthopad.svelte.ts`, and `src/ui/orthopad/OrthoPadWorkspace.svelte`.
 - PlatformIO Pro Micro firmware, EEPROM persistence, CAD input handling, HID output, and protocol documentation in `firmware/`.
 - OrthoPad protocol and backend regression tests in `src/core/orthopad-protocol.test.ts` and `src/device/orthopad.test.ts`.
-- Live Joystick Monitor with raw X/Y ADC, center/deadzone visualization, button states, and gesture mode telemetry.
+- OrthoPad usage guide in `docs/OrthoPad-Usage.md` and README link.
 ### Verification
 - `svelte-check`, `tsc --noEmit`, and Vitest: 24 files, 201 tests passed.
 - PlatformIO `promicro5v` and `diagnostic`: both build successfully with joystick telemetry.

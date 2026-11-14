@@ -15,6 +15,7 @@ pio run -e diagnostic
 ```
 
 Konfigurasi OrthoPad memakai protokol biner khusus, bukan VIA v13. Detail frame dan command ada di `firmware/protocol.md`.
+Panduan penggunaan lengkap ada di [`docs/OrthoPad-Usage.md`](docs/OrthoPad-Usage.md).
 
 ## Try It
 
