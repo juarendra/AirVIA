@@ -21,6 +21,15 @@ class FakeTransport {
   }
 }
 
+class LegacyJoystickTransport {
+  async request(command: number): Promise<Uint8Array> {
+    if (command === OrthoPadCommand.GetJoystickState) {
+      return new Uint8Array([0, 2, 224, 1, 0x20, 0x00, 0x00, 0x00]);
+    }
+    return new Uint8Array();
+  }
+}
+
 describe('OrthoPad configuration', () => {
   it('creates the expected three-layer default config', () => {
     const config = defaultOrthoPadConfig();
@@ -49,5 +58,12 @@ describe('OrthoPad configuration', () => {
       activeLayer: 1,
       encoderSteps: -2,
     });
+  });
+
+  it('decodes legacy eight-byte joystick telemetry without encoder steps', async () => {
+    const state = await new OrthoPadBackend(new LegacyJoystickTransport()).getJoystickState();
+    expect(state.encoderSteps).toBeNull();
+    expect(state.rawX).toBe(512);
+    expect(state.rawY).toBe(480);
   });
 });

@@ -65,6 +65,8 @@ Response data `GetJoystickState` berukuran 12 byte:
 
 AirVIA melakukan polling 10 kali per detik saat koneksi aktif. Nilai ini dipakai untuk diagnosis center, deadzone, drift, tombol joystick, arah putaran encoder, dan mode gesture; tidak mengubah konfigurasi.
 
+Kompatibilitas: firmware `0.2.x` mengirim payload legacy 8 byte tanpa `encoderSteps`. AirVIA tetap menampilkan joystick dan switch, tetapi encoder rotation tester meminta firmware `0.3.0` atau lebih baru.
+
 ## Action encoding
 
 Satu action berukuran 4 byte:

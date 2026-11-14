@@ -17,8 +17,9 @@
   const config = $derived(getOrthoPadConfig());
   const sample = $derived(getOrthoPadJoystickState());
   const encoderSteps = $derived(sample?.encoderSteps ?? 0);
-  const rawX = $derived(sample?.rawX ?? 512);
+  const encoderTelemetryAvailable = $derived(sample?.encoderSteps !== null && sample?.encoderSteps !== undefined);
   const rawY = $derived(sample?.rawY ?? 512);
+  const rawX = $derived(sample?.rawX ?? 512);
   const centerX = $derived(config?.settings.centerX ?? 512);
   const centerY = $derived(config?.settings.centerY ?? 512);
   const deadzone = $derived(config?.settings.deadzone ?? 100);
@@ -57,6 +58,10 @@
   });
 
   $effect(() => {
+    if (!encoderTelemetryAvailable) {
+      lastEncoderSteps = null;
+      return;
+    }
     const current = encoderSteps;
     if (lastEncoderSteps === null) {
       lastEncoderSteps = current;
@@ -181,12 +186,12 @@
         <div class="rounded-lg border border-surface-raised p-3">
           <div class="flex items-center justify-between text-xs">
             <span class="text-text-dimmed">Encoder tester</span>
-            <span class="font-mono text-text-primary">{encoderSteps} steps</span>
+            <span class="font-mono text-text-primary">{encoderTelemetryAvailable ? `${encoderSteps} steps` : 'Update firmware'}</span>
           </div>
           <div class="mt-2 grid grid-cols-2 gap-2">
             <div class="rounded-md bg-bg-dark px-3 py-2">
               <div class="text-[0.65rem] text-text-dimmed">Last rotation</div>
-              <div class="mt-1 text-sm text-accent-cyan">{encoderEvent}</div>
+              <div class="mt-1 text-sm text-accent-cyan">{encoderTelemetryAvailable ? encoderEvent : 'Firmware 0.3.0 required'}</div>
             </div>
             <div class="rounded-md bg-bg-dark px-3 py-2">
               <div class="text-[0.65rem] text-text-dimmed">Encoder switch</div>
