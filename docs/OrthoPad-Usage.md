@@ -48,6 +48,9 @@ Firmware production menyediakan:
 - Keymap tiga layer.
 - Encoder.
 - Joystick orbit/pan.
+- Sumbu joystick menggerakkan cursor OS pada firmware production; polling input berjalan 20 Hz.
+- Orbit memakai tahan switch joystick; pan memakai tahan switch joystick dan encoder bersamaan.
+- Saat Joystick Monitor terbuka, HID sengaja dinonaktifkan agar pengujian tidak menggerakkan cursor.
 - Protokol konfigurasi AirVIA.
 - Joystick telemetry untuk monitor.
 

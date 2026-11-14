@@ -20,6 +20,7 @@ constexpr uint8_t ButtonPins[ButtonCount + 2] = {
   Button1, Button2, Button3, Button4, Button5, JoySwitch, EncoderSwitch,
 };
 constexpr uint16_t DebounceMs = 8;
+constexpr uint16_t JoystickPollMs = 50;
 constexpr uint16_t MaxFrame = 2 + 7 + MaxPayload + 2;
 constexpr uint16_t StorageMagic = 0x4f50;
 constexpr uint16_t StorageSlotSize = 256;
@@ -390,7 +391,7 @@ void processJoystick(uint32_t now) {
   (void)now;
   return;
 #endif
-  if (now - lastJoystickAt < 5000) return;
+  if (now - lastJoystickAt < JoystickPollMs) return;
   lastJoystickAt = now;
   const uint16_t x = analogRead(JoyY);
   const uint16_t y = analogRead(JoyX);
