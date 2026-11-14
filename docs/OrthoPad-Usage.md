@@ -49,7 +49,9 @@ Firmware production menyediakan:
 - Encoder.
 - Joystick orbit/pan.
 - Sumbu joystick menggerakkan cursor OS pada firmware production; polling input berjalan 20 Hz.
-- Orbit memakai tahan switch joystick; pan memakai tahan switch joystick dan encoder bersamaan.
+- Tahan switch encoder + gerakkan joystick: pan dengan middle/wheel-button drag.
+- Tahan switch joystick + switch encoder + gerakkan joystick: orbit dengan modifier `Shift` + middle/wheel-button drag.
+- Tahan switch joystick saja: modifier `Shift`; tap singkat tetap left click.
 - Saat Joystick Monitor terbuka, HID sengaja dinonaktifkan agar pengujian tidak menggerakkan cursor.
 - Protokol konfigurasi AirVIA.
 - Joystick telemetry untuk monitor.

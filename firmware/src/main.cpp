@@ -45,6 +45,9 @@ uint32_t changedAt[ButtonCount + 2] = {};
 bool joyHeld = false;
 bool orbitActive = false;
 bool panActive = false;
+bool cadShiftActive = false;
+bool cadMiddleActive = false;
+bool cadMiddleFromMotion = false;
 bool testMode = false;
 uint32_t joyPressedAt = 0;
 bool encoderHeld = false;
@@ -249,6 +252,9 @@ void releaseAllHid() {
   joyHeld = false;
   orbitActive = false;
   panActive = false;
+  cadShiftActive = false;
+  cadMiddleActive = false;
+  cadMiddleFromMotion = false;
 }
 
 void pressModifier(uint8_t modifiers) {
@@ -263,6 +269,42 @@ void releaseModifier(uint8_t modifiers) {
   if (modifiers & ModifierShift) Keyboard.release(KEY_LEFT_SHIFT);
   if (modifiers & ModifierAlt) Keyboard.release(KEY_LEFT_ALT);
   if (modifiers & ModifierGui) Keyboard.release(KEY_LEFT_GUI);
+}
+
+void updateCadGestureFlags() {
+  orbitActive = cadShiftActive && cadMiddleActive;
+  panActive = cadMiddleActive && !cadShiftActive;
+}
+
+void pressCadShift() {
+  if (cadShiftActive) return;
+  if (!testMode) pressModifier(activeConfig.settings.panModifier);
+  cadShiftActive = true;
+  updateCadGestureFlags();
+}
+
+void releaseCadShift() {
+  if (!cadShiftActive) return;
+  if (!testMode) releaseModifier(activeConfig.settings.panModifier);
+  cadShiftActive = false;
+  updateCadGestureFlags();
+}
+
+void pressCadMiddle(bool fromMotion) {
+  if (!cadMiddleActive) {
+    if (!testMode) Mouse.press(MOUSE_MIDDLE);
+    cadMiddleActive = true;
+  }
+  cadMiddleFromMotion = cadMiddleFromMotion || fromMotion;
+  updateCadGestureFlags();
+}
+
+void releaseCadMiddle() {
+  if (!cadMiddleActive) return;
+  if (!testMode) Mouse.release(MOUSE_MIDDLE);
+  cadMiddleActive = false;
+  cadMiddleFromMotion = false;
+  updateCadGestureFlags();
 }
 
 void tapAction(const Action& action) {
@@ -291,8 +333,8 @@ void processButton(uint8_t index, bool pressed, uint32_t now) {
       joyPressedAt = now;
       joyHeld = true;
     } else {
-      if (orbitActive || panActive) releaseAllHid();
-      else if (!testMode && now - joyPressedAt < activeConfig.settings.tapMs) Mouse.click(MOUSE_LEFT);
+      const bool hadCadGesture = cadShiftActive || cadMiddleActive;
+      if (!testMode && !hadCadGesture && now - joyPressedAt < activeConfig.settings.tapMs) Mouse.click(MOUSE_LEFT);
       joyHeld = false;
     }
   }
@@ -302,7 +344,8 @@ void processButton(uint8_t index, bool pressed, uint32_t now) {
       encoderHeld = true;
       encoderLayerTriggered = false;
     } else {
-      if (!testMode && !encoderLayerTriggered && now - encoderPressedAt < activeConfig.settings.encoderTapMs) Mouse.click(MOUSE_RIGHT);
+      const bool hadCadGesture = cadMiddleActive;
+      if (!testMode && !hadCadGesture && !encoderLayerTriggered && now - encoderPressedAt < activeConfig.settings.encoderTapMs) Mouse.click(MOUSE_RIGHT);
       encoderHeld = false;
       encoderLayerTriggered = false;
     }
@@ -326,20 +369,11 @@ void scanButtons(uint32_t now) {
     }
   }
 
-  if (joyHeld && !orbitActive && now - joyPressedAt >= activeConfig.settings.holdMs) {
-    const bool pan = encoderHeld;
-    if (pan) {
-      if (!testMode) {
-        pressModifier(activeConfig.settings.panModifier);
-        Mouse.press(MOUSE_MIDDLE);
-      }
-      panActive = true;
-    } else {
-      if (!testMode) Mouse.press(MOUSE_MIDDLE);
-      orbitActive = true;
-    }
-  }
-  if (encoderHeld && !encoderLayerTriggered && !joyHeld && now - encoderPressedAt >= activeConfig.settings.layerHoldMs) {
+  if (joyHeld && now - joyPressedAt >= activeConfig.settings.holdMs) pressCadShift();
+  else releaseCadShift();
+  if (cadShiftActive && encoderHeld) pressCadMiddle(false);
+  if (!encoderHeld || (!cadMiddleFromMotion && !cadShiftActive)) releaseCadMiddle();
+  if (encoderHeld && !encoderLayerTriggered && !joyHeld && !cadMiddleActive && now - encoderPressedAt >= activeConfig.settings.layerHoldMs) {
     activeLayer = static_cast<uint8_t>((activeLayer + 1) % LayerCount);
     encoderLayerTriggered = true;
     digitalWrite(LED_BUILTIN, HIGH);
@@ -397,7 +431,10 @@ void processJoystick(uint32_t now) {
   const uint16_t y = analogRead(JoyX);
   const int8_t dx = axisDelta(x, activeConfig.settings.centerX, activeConfig.settings.invertX);
   const int8_t dy = axisDelta(y, activeConfig.settings.centerY, activeConfig.settings.invertY);
-  if (!testMode && (dx != 0 || dy != 0)) Mouse.move(dx, dy, 0);
+  if (!testMode && (dx != 0 || dy != 0)) {
+    if (encoderHeld && !cadMiddleActive) pressCadMiddle(true);
+    Mouse.move(dx, dy, 0);
+  }
 }
 
 #if !defined(ORTHOPAD_DIAGNOSTIC)
