@@ -225,6 +225,7 @@
       <div>
         <h2 class="font-semibold text-text-primary">CAD settings</h2>
         <p class="text-xs text-text-muted">Draft tersimpan di browser sampai Apply &amp; Save ditekan.</p>
+        <p class="text-xs text-text-dimmed">Recommended: Deadzone 30 · Speed 8 · Curve 500 · joystick HID 50 Hz.</p>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
         <label class="text-xs text-text-muted">Center X<input class="mt-1 w-full bg-surface-elevated rounded-md p-2 text-text-primary" type="number" min="0" max="1023" value={config.settings.centerX} onchange={(event) => setOrthoPadSettings({ centerX: numberValue(event) })} /></label>

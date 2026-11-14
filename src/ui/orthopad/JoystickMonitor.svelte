@@ -11,7 +11,7 @@
   const CENTER = 120;
   const RADIUS = 96;
   const BUTTON_LABELS = ['BTN1', 'BTN2', 'BTN3', 'BTN4', 'BTN5'];
-  const POLL_INTERVAL_MS = 50;
+  const POLL_INTERVAL_MS = 20;
   const DISPLAY_EASING = 0.3;
   const connectionState = $derived(getOrthoPadConnectionState());
   const backend = $derived(getOrthoPadBackend());
@@ -162,7 +162,7 @@
       <p class="mt-1 text-[0.65rem] text-text-dimmed">X {invertX ? 'inverted' : 'normal'} · Y {invertY ? 'inverted' : 'normal'}</p>
     </div>
     <div class="text-right text-xs text-text-muted">
-      <div>{connectionState === 'connected' ? '20 samples/sec · smoothed' : 'Not connected'}</div>
+      <div>{connectionState === 'connected' ? '50 samples/sec · smoothed' : 'Not connected'}</div>
       {#if sample}<div>Layer: <span class="text-text-primary">{layerLabel(sample.activeLayer)}</span></div>{/if}
     </div>
   </div>
