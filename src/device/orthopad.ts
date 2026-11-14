@@ -90,7 +90,7 @@ export function defaultOrthoPadConfig(): OrthoPadConfig {
       speedMilli: 1000,
       curveMilli: 1000,
       invertX: false,
-      invertY: true,
+      invertY: false,
       tapMs: 350,
       holdMs: 700,
       encoderTapMs: 450,

@@ -13,6 +13,7 @@
 - Joystick monitor test mode suppresses HID side effects while testing encoder and switches.
 - Pro Micro USB product descriptor now reports `OrthoPad`.
 - Joystick HID polling corrected to 20 Hz; normal mode moves the OS cursor while monitor test mode suppresses HID.
+- Joystick Y inversion default changed to normal orientation after hardware validation.
 ### Verification
 - `svelte-check`, `tsc --noEmit`, and Vitest: 24 files, 205 tests passed.
 - Firmware encoder regression logic check passed; native test execution requires a local GCC toolchain.
