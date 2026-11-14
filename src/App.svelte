@@ -15,10 +15,14 @@
   import ProfileManager from './ui/profile/ProfileManager.svelte';
   import DefinitionOnboarding from './ui/definition/DefinitionOnboarding.svelte';
   import ManualPage from './ui/manual/ManualPage.svelte';
+  import OrthoPadWorkspace from './ui/orthopad/OrthoPadWorkspace.svelte';
   import { toast } from './ui/shared/Toast.svelte';
 
   import { BLETransport } from './ble/transport';
   import { setTransport } from './ble/dispatch';
+  import { OrthoPadSerialTransport } from './serial/transport';
+  import { OrthoPadBackend } from './device/orthopad';
+  import { setOrthoPadBackend, setOrthoPadConnectionState, setOrthoPadSnapshot, clearOrthoPadState } from './store/orthopad.svelte';
   import { synchronizeDevice, parseDeviceName } from './device/synchronizer';
   import { parseV3Definition } from './core/v3-definition';
   import { parseU32 } from './core/protocol';
@@ -48,6 +52,8 @@
   } from './store/app.svelte';
 
   let transport: BLETransport | null = null;
+  let orthoPadTransport: OrthoPadSerialTransport | null = null;
+  let orthoPadBackend: OrthoPadBackend | null = null;
 
   async function handleConnect() {
     if (!getDefinition()) {
@@ -120,6 +126,31 @@
       setSyncProgress('Sync failed — try reconnecting');
       return;
     }
+  }
+
+  async function handleOrthoPadConnect() {
+    await handleOrthoPadDisconnect();
+    const nextTransport = new OrthoPadSerialTransport();
+    const nextBackend = new OrthoPadBackend(nextTransport);
+    orthoPadTransport = nextTransport;
+    orthoPadBackend = nextBackend;
+    nextTransport.onStateChange = (state) => setOrthoPadConnectionState(state);
+    setOrthoPadBackend(nextBackend);
+    try {
+      await nextTransport.connect();
+      const snapshot = await nextBackend.sync();
+      setOrthoPadSnapshot(snapshot.info, snapshot.config);
+    } catch (reason) {
+      await handleOrthoPadDisconnect();
+      throw reason;
+    }
+  }
+
+  async function handleOrthoPadDisconnect() {
+    await orthoPadTransport?.disconnect();
+    orthoPadTransport = null;
+    orthoPadBackend = null;
+    clearOrthoPadState();
   }
 
   async function handleDisconnect() {
@@ -222,7 +253,11 @@
 
     <!-- Main Editor Area -->
     <main class="flex-1 flex flex-col min-w-0 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
-      {#if activeTab !== 'manual' && getDefinition()}
+      {#if activeTab === 'orthopad'}
+        <div class="bg-surface-dark border-b border-surface-raised px-4 py-3 md:px-5 md:py-4">
+          <h1 class="text-base md:text-lg font-bold text-text-primary">OrthoPad CAD Configurator</h1>
+        </div>
+      {:else if activeTab !== 'manual' && getDefinition()}
         <WorkspaceHeader />
       {:else}
         <div class="bg-surface-dark border-b border-surface-raised px-4 py-3 md:px-5 md:py-4">
@@ -231,7 +266,9 @@
       {/if}
 
       <div class="flex-1 min-h-0">
-        {#if !getDefinition() && activeTab !== 'manual'}
+        {#if activeTab === 'orthopad'}
+          <OrthoPadWorkspace onConnect={handleOrthoPadConnect} onDisconnect={handleOrthoPadDisconnect} />
+        {:else if !getDefinition() && activeTab !== 'manual'}
           <DefinitionOnboarding onLoad={triggerFileInput} />
         {:else if activeTab === 'keymap'}
           <KeymapGrid />

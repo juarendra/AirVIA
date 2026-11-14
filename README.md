@@ -2,6 +2,20 @@
 
 Wireless keyboard configurator for VIA v13 over BLE. Load a V3 JSON definition, connect to your keyboard, and remap keys — no cables needed.
 
+## OrthoPad CAD configurator
+
+AirVIA juga menyediakan konfigurator USB untuk OrthoPad berbasis Arduino Pro Micro / ATmega32U4. Buka tab **OrthoPad**, hubungkan lewat Web Serial, lalu atur keymap tiga layer, encoder, joystick CAD settings, dan simpan konfigurasi ke EEPROM firmware tanpa reflash.
+
+Firmware ada di `firmware/` dan dibangun dengan PlatformIO:
+
+```sh
+cd firmware
+pio run -e promicro5v
+pio run -e diagnostic
+```
+
+Konfigurasi OrthoPad memakai protokol biner khusus, bukan VIA v13. Detail frame dan command ada di `firmware/protocol.md`.
+
 ## Try It
 
 **[Launch AirVIA →](https://juarendra.github.io/AirVIA/)**
@@ -48,23 +62,26 @@ pnpm build        # Production build to dist/
 
 ## Architecture
 
-| Layer     | Path     | Role                               |
-|-----------|----------|------------------------------------|
-| **core**  | `src/core/`  | Protocol encoding, V3 JSON parsing, keycode tables |
-| **ble**   | `src/ble/`   | BLE transport, command queue       |
-| **store** | `src/store/` | Svelte 5 reactive state            |
-| **ui**    | `src/ui/`    | Svelte 5 components                |
+| Layer | Path | Role |
+|-------|------|------|
+| **core** | `src/core/` | Protocol encoding, V3 JSON parsing, keycode tables |
+| **ble** | `src/ble/` | BLE transport, command queue |
+| **serial** | `src/serial/` | Web Serial transport untuk OrthoPad |
+| **device** | `src/device/` | Backend dan codec konfigurasi OrthoPad |
+| **store** | `src/store/` | Svelte 5 reactive state |
+| **ui** | `src/ui/` | Svelte 5 components |
+| **firmware** | `firmware/` | PlatformIO firmware Pro Micro dan protokol USB |
 
 ## Browser Support
 
-Web Bluetooth (BLE connection, synchronization, and device writes) requires:
+Web Bluetooth untuk koneksi BLE, sinkronisasi, dan write VIA memerlukan:
 
 - Chrome 122+
 - Edge 122+
 
-(Web Bluetooth API is not supported in Firefox or Safari.)
+Web Serial untuk OrthoPad juga memerlukan Chrome atau Edge dengan izin serial pada origin aplikasi. Firefox dan Safari tidak mendukung API browser tersebut.
 
-The manual, definition loader, and profile manager work in any modern browser — only BLE features are Chrome/Edge-only.
+Manual, definition loader, profile manager, dan editor offline tetap dapat dipakai tanpa Web Bluetooth/Web Serial.
 
 ## License
 

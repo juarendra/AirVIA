@@ -1,0 +1,18 @@
+{
+  "name": "OrthoPad CAD",
+  "vendorId": "OrthoPad",
+  "productId": "OrthoPad-ATmega32U4",
+  "matrix": { "rows": 1, "cols": 5 },
+  "layouts": {
+    "keymap": [
+      { "x": 0, "y": 0, "row": 0, "col": 0 },
+      { "x": 1, "y": 0, "row": 0, "col": 1 },
+      { "x": 2, "y": 0, "row": 0, "col": 2 },
+      { "x": 3, "y": 0, "row": 0, "col": 3 },
+      { "x": 4, "y": 0, "row": 0, "col": 4 }
+    ],
+    "labels": ["BTN1", "BTN2", "BTN3", "BTN4", "BTN5"]
+  },
+  "encoders": 1,
+  "lighting": "none"
+}
