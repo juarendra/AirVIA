@@ -267,6 +267,10 @@ export class OrthoPadBackend {
     };
   }
 
+  async setTestMode(enabled: boolean): Promise<void> {
+    await this.transport.request(OrthoPadCommand.SetTestMode, Uint8Array.of(enabled ? 1 : 0));
+  }
+
   async setCadSettings(settings: OrthoPadCadSettings): Promise<void> {
     await this.transport.request(OrthoPadCommand.SetCadSettings, encodeSettings(settings));
   }

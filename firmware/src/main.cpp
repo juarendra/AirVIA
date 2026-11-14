@@ -43,6 +43,7 @@ uint32_t changedAt[ButtonCount + 2] = {};
 bool joyHeld = false;
 bool orbitActive = false;
 bool panActive = false;
+bool testMode = false;
 uint32_t joyPressedAt = 0;
 bool encoderHeld = false;
 uint32_t encoderPressedAt = 0;
@@ -263,7 +264,7 @@ void releaseModifier(uint8_t modifiers) {
 }
 
 void tapAction(const Action& action) {
-  if (action.type == ActionNone) return;
+  if (testMode || action.type == ActionNone) return;
   if (action.type == ActionWheel) {
     int16_t amount = action.amount * activeConfig.settings.wheelStep;
     if (amount > 127) amount = 127;
@@ -289,7 +290,7 @@ void processButton(uint8_t index, bool pressed, uint32_t now) {
       joyHeld = true;
     } else {
       if (orbitActive || panActive) releaseAllHid();
-      else if (now - joyPressedAt < activeConfig.settings.tapMs) Mouse.click(MOUSE_LEFT);
+      else if (!testMode && now - joyPressedAt < activeConfig.settings.tapMs) Mouse.click(MOUSE_LEFT);
       joyHeld = false;
     }
   }
@@ -299,7 +300,7 @@ void processButton(uint8_t index, bool pressed, uint32_t now) {
       encoderHeld = true;
       encoderLayerTriggered = false;
     } else {
-      if (!encoderLayerTriggered && now - encoderPressedAt < activeConfig.settings.encoderTapMs) Mouse.click(MOUSE_RIGHT);
+      if (!testMode && !encoderLayerTriggered && now - encoderPressedAt < activeConfig.settings.encoderTapMs) Mouse.click(MOUSE_RIGHT);
       encoderHeld = false;
       encoderLayerTriggered = false;
     }
@@ -326,11 +327,13 @@ void scanButtons(uint32_t now) {
   if (joyHeld && !orbitActive && now - joyPressedAt >= activeConfig.settings.holdMs) {
     const bool pan = encoderHeld;
     if (pan) {
-      pressModifier(activeConfig.settings.panModifier);
-      Mouse.press(MOUSE_MIDDLE);
+      if (!testMode) {
+        pressModifier(activeConfig.settings.panModifier);
+        Mouse.press(MOUSE_MIDDLE);
+      }
       panActive = true;
     } else {
-      Mouse.press(MOUSE_MIDDLE);
+      if (!testMode) Mouse.press(MOUSE_MIDDLE);
       orbitActive = true;
     }
   }
@@ -394,7 +397,7 @@ void processJoystick(uint32_t now) {
   const uint16_t y = analogRead(JoyX);
   const int8_t dx = axisDelta(x, activeConfig.settings.centerX, activeConfig.settings.invertX);
   const int8_t dy = axisDelta(y, activeConfig.settings.centerY, activeConfig.settings.invertY);
-  if (dx != 0 || dy != 0) Mouse.move(dx, dy, 0);
+  if (!testMode && (dx != 0 || dy != 0)) Mouse.move(dx, dy, 0);
 }
 
 #if !defined(ORTHOPAD_DIAGNOSTIC)
@@ -599,6 +602,12 @@ void handleCommand(uint8_t version, uint16_t sequence, uint8_t command, const ui
       if (!saveStorage(stagingConfig)) { sendResponse(sequence, command, StorageError); return; }
       activeConfig = stagingConfig;
       stagingDirty = false;
+      sendResponse(sequence, command, Ok);
+      return;
+    case SetTestMode:
+      if (length != 1 || payload[0] > 1) { sendResponse(sequence, command, InvalidArgument); return; }
+      testMode = payload[0] != 0;
+      if (testMode) releaseAllHid();
       sendResponse(sequence, command, Ok);
       return;
     case GetJoystickState:

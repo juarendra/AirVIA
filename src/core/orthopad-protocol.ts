@@ -25,6 +25,7 @@ export const enum OrthoPadCommand {
   ResetDefaults = 0x32,
   Verify = 0x33,
   GetJoystickState = 0x40,
+  SetTestMode = 0x41,
   Reboot = 0x7f,
 }
 

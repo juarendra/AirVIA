@@ -47,6 +47,7 @@ Response payload selalu diawali status satu byte. Data command berada setelah st
 | `0x32` ResetDefaults | `4F 50` | kosong |
 | `0x33` Verify | kosong | storage generation `u32` |
 | `0x40` GetJoystickState | kosong | raw X/Y, tombol, mode, layer |
+| `0x41` SetTestMode | `u8` 0 disable, 1 enable | kosong |
 | `0x7F` Reboot | kosong | kosong, lalu reboot |
 
 Device layout saat ini tetap: 3 layer, 5 tombol, 1 encoder.
@@ -66,6 +67,10 @@ Response data `GetJoystickState` berukuran 12 byte:
 AirVIA melakukan polling 20 kali per detik saat koneksi aktif. Posisi visual menggunakan interpolasi ringan, tetapi raw X/Y tetap ditampilkan tanpa pemrosesan untuk diagnosis center, deadzone, drift, tombol joystick, arah putaran encoder, dan mode gesture; telemetry tidak mengubah konfigurasi.
 
 Kompatibilitas: firmware `0.2.x` mengirim payload legacy 8 byte tanpa `encoderSteps`. AirVIA tetap menampilkan joystick dan switch, tetapi encoder rotation tester meminta firmware `0.3.0` atau lebih baru.
+
+## Monitor test mode
+
+AirVIA mengaktifkan `SetTestMode=1` saat Joystick Monitor tersambung. Firmware tetap membaca joystick, switch, dan encoder untuk telemetry, tetapi menekan semua output HID agar putaran encoder tidak mengirim mouse wheel dan tombol test tidak mengirim key/mouse event. Mode ini tidak disimpan ke EEPROM dan dilepas saat monitor disconnect.
 
 ## Action encoding
 

@@ -3,6 +3,7 @@ import { defaultOrthoPadConfig, OrthoPadBackend } from './orthopad';
 import { OrthoPadCommand } from '../core/orthopad-protocol';
 
 class FakeTransport {
+  lastTestMode: boolean | null = null;
   async request(command: number, payload = new Uint8Array()): Promise<Uint8Array> {
     if (command === OrthoPadCommand.GetInfo) {
       const encode = (value: string) => new Uint8Array([value.length, ...new TextEncoder().encode(value)]);
@@ -17,6 +18,10 @@ class FakeTransport {
     if (command === OrthoPadCommand.GetEncoder) return new Uint8Array([2, 1, 0, 0, 2, 0xff, 0xff, 0]);
     if (command === OrthoPadCommand.GetCadSettings) return new Uint8Array(23);
     if (command === OrthoPadCommand.GetJoystickState) return new Uint8Array([0, 2, 224, 1, 0x20, 0x04, 1, 0, 0xfe, 0xff, 0xff, 0xff]);
+    if (command === OrthoPadCommand.SetTestMode) {
+      this.lastTestMode = payload[0] === 1;
+      return new Uint8Array();
+    }
     return payload;
   }
 }
@@ -65,5 +70,13 @@ describe('OrthoPad configuration', () => {
     expect(state.encoderSteps).toBeNull();
     expect(state.rawX).toBe(512);
     expect(state.rawY).toBe(480);
+  });
+  it('toggles HID test mode for monitor polling', async () => {
+    const transport = new FakeTransport();
+    const backend = new OrthoPadBackend(transport);
+    await backend.setTestMode(true);
+    expect(transport.lastTestMode).toBe(true);
+    await backend.setTestMode(false);
+    expect(transport.lastTestMode).toBe(false);
   });
 });

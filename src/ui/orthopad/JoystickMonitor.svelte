@@ -45,9 +45,20 @@
     const currentState = connectionState;
     const currentBackend = backend;
     if (currentState !== 'connected' || !currentBackend) return;
-
     let stopped = false;
+
     const poll = async () => {
+      let testModeActive = false;
+      try {
+        await currentBackend.setTestMode(true);
+        testModeActive = true;
+      } catch {
+        // Legacy firmware has no test-mode command; retain telemetry compatibility.
+      }
+      if (stopped) {
+        if (testModeActive) await currentBackend.setTestMode(false).catch(() => {});
+        return;
+      }
       while (!stopped) {
         try {
           const next = await currentBackend.getJoystickState();
@@ -60,8 +71,8 @@
         }
         await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
       }
+      if (testModeActive) await currentBackend.setTestMode(false).catch(() => {});
     };
-
     void poll();
     return () => { stopped = true; };
   });
