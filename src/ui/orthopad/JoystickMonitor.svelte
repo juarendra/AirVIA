@@ -11,7 +11,8 @@
   const CENTER = 120;
   const RADIUS = 96;
   const BUTTON_LABELS = ['BTN1', 'BTN2', 'BTN3', 'BTN4', 'BTN5'];
-
+  const POLL_INTERVAL_MS = 50;
+  const DISPLAY_EASING = 0.3;
   const connectionState = $derived(getOrthoPadConnectionState());
   const backend = $derived(getOrthoPadBackend());
   const config = $derived(getOrthoPadConfig());
@@ -23,8 +24,12 @@
   const centerX = $derived(config?.settings.centerX ?? 512);
   const centerY = $derived(config?.settings.centerY ?? 512);
   const deadzone = $derived(config?.settings.deadzone ?? 100);
-  const pointX = $derived(axisPosition(rawX, centerX));
-  const pointY = $derived(CENTER - ((rawY - centerY) / 512) * RADIUS);
+  let visualX = $state(512);
+  let visualY = $state(512);
+  let animationX = 512;
+  let animationY = 512;
+  const pointX = $derived(axisPosition(visualX, centerX));
+  const pointY = $derived(CENTER - ((visualY - centerY) / 512) * RADIUS);
   const deadzoneRadius = $derived(Math.max(5, Math.min(RADIUS, (deadzone / 512) * RADIUS)));
   const offset = $derived(Math.hypot(rawX - centerX, rawY - centerY));
   const centered = $derived(offset <= deadzone);
@@ -49,7 +54,7 @@
         } catch (reason) {
           if (!stopped) monitorError = reason instanceof Error ? reason.message : 'Joystick telemetry failed';
         }
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
       }
     };
 
@@ -72,7 +77,34 @@
     if (delta < 0) encoderEvent = `Counter-clockwise ${delta}`;
     lastEncoderSteps = current;
   });
-
+  $effect(() => {
+    const targetX = rawX;
+    const targetY = rawY;
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let currentX = animationX;
+    let currentY = animationY;
+    const animate = () => {
+      if (stopped) return;
+      currentX += (targetX - currentX) * DISPLAY_EASING;
+      currentY += (targetY - currentY) * DISPLAY_EASING;
+      animationX = currentX;
+      animationY = currentY;
+      visualX = currentX;
+      visualY = currentY;
+      if (Math.abs(targetX - currentX) < 0.25 && Math.abs(targetY - currentY) < 0.25) {
+        visualX = targetX;
+        visualY = targetY;
+        return;
+      }
+      timer = setTimeout(animate, 16);
+    };
+    timer = setTimeout(animate, 0);
+    return () => {
+      stopped = true;
+      if (timer !== undefined) clearTimeout(timer);
+    };
+  });
   function axisPosition(value: number, center: number): number {
     return Math.max(CENTER - RADIUS, Math.min(CENTER + RADIUS, CENTER + ((value - center) / 512) * RADIUS));
   }
@@ -114,7 +146,7 @@
       <p class="mt-1 text-xs text-text-muted">Live raw ADC telemetry untuk memeriksa center, deadzone, drift, dan switch.</p>
     </div>
     <div class="text-right text-xs text-text-muted">
-      <div>{connectionState === 'connected' ? '10 samples/sec' : 'Not connected'}</div>
+      <div>{connectionState === 'connected' ? '20 samples/sec · smoothed' : 'Not connected'}</div>
       {#if sample}<div>Layer: <span class="text-text-primary">{layerLabel(sample.activeLayer)}</span></div>{/if}
     </div>
   </div>

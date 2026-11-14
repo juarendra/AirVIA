@@ -63,7 +63,7 @@ Response data `GetJoystickState` berukuran 12 byte:
 - `u8 reserved`
 - `i32 encoderSteps` — counter kumulatif detent encoder
 
-AirVIA melakukan polling 10 kali per detik saat koneksi aktif. Nilai ini dipakai untuk diagnosis center, deadzone, drift, tombol joystick, arah putaran encoder, dan mode gesture; tidak mengubah konfigurasi.
+AirVIA melakukan polling 20 kali per detik saat koneksi aktif. Posisi visual menggunakan interpolasi ringan, tetapi raw X/Y tetap ditampilkan tanpa pemrosesan untuk diagnosis center, deadzone, drift, tombol joystick, arah putaran encoder, dan mode gesture; telemetry tidak mengubah konfigurasi.
 
 Kompatibilitas: firmware `0.2.x` mengirim payload legacy 8 byte tanpa `encoderSteps`. AirVIA tetap menampilkan joystick dan switch, tetapi encoder rotation tester meminta firmware `0.3.0` atau lebih baru.
 
