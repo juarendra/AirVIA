@@ -70,7 +70,7 @@ inline DeviceConfig defaults() {
     config.encoders[layer][1] = wheelAction(-1);
   }
   config.settings = {
-    512, 512, 30, 1000, 1000, false, false,
+    512, 512, 30, 150, 700, false, false,
     350, 700, 450, 700, 1, 1, 0x02,
   };
   return config;
