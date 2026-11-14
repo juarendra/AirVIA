@@ -16,6 +16,7 @@
 - Joystick Y inversion default changed to normal orientation after hardware validation.
 - Fusion CAD gestures now support encoder-switch middle-button drag and joystick-switch modifier chords.
 - Fusion orbit chord presses the modifier before middle-button drag to avoid starting as pan.
+- Joystick switch now starts Fusion orbit directly; encoder switch starts pan during joystick movement.
 ### Verification
 - `svelte-check`, `tsc --noEmit`, and Vitest: 24 files, 205 tests passed.
 - Firmware encoder regression logic check passed; native test execution requires a local GCC toolchain.

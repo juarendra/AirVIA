@@ -137,10 +137,15 @@ Saat joystick switch ditekan:
 
 Saat joystick switch ditahan:
 
-- Mode berubah menjadi `Orbit active`.
+- Mode berubah menjadi `Orbit active`; firmware menekan Shift + middle mouse.
 
-Saat joystick dan encoder switch ditahan bersama:
-- Mode berubah menjadi `Pan active`.
+Saat encoder switch ditahan sambil joystick digerakkan:
+
+- Mode berubah menjadi `Pan active`; firmware menekan middle mouse.
+
+Saat kedua switch ditahan bersama:
+
+- Mode tetap `Orbit active`; firmware menekan Shift + middle mouse.
 
 Saat encoder diputar:
 
@@ -205,8 +210,17 @@ Tombol encoder memiliki gesture firmware:
 Joystick switch:
 
 - Klik pendek: left-click.
-- Tahan sekitar 700 ms: orbit dengan middle mouse.
-- Bersama encoder switch: pan dengan Shift + middle mouse.
+- Tahan sekitar 700 ms: orbit dengan Shift + middle mouse.
+
+Encoder switch:
+
+- Klik pendek: right-click.
+- Tahan sambil menggerakkan joystick: pan dengan middle mouse.
+- Tahan sekitar 700 ms tanpa gerakan joystick: pindah layer.
+
+Kedua switch:
+
+- Tahan bersama: orbit dengan Shift + middle mouse.
 
 Klik **Apply & Save** untuk menulis staging config ke EEPROM dan melakukan verifikasi ulang.
 

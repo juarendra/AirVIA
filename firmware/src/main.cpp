@@ -369,10 +369,11 @@ void scanButtons(uint32_t now) {
     }
   }
 
-  if (joyHeld && (encoderHeld || now - joyPressedAt >= activeConfig.settings.holdMs)) pressCadShift();
+  const bool joystickOrbitReady = joyHeld && now - joyPressedAt >= activeConfig.settings.holdMs;
+  if (joyHeld && (encoderHeld || joystickOrbitReady)) pressCadShift();
   else releaseCadShift();
-  if (cadShiftActive && encoderHeld) pressCadMiddle(false);
-  if (!encoderHeld || (!cadMiddleFromMotion && !cadShiftActive)) releaseCadMiddle();
+  if (joystickOrbitReady || (cadShiftActive && encoderHeld)) pressCadMiddle(false);
+  else if (!encoderHeld || (!joyHeld && !cadMiddleFromMotion)) releaseCadMiddle();
   if (encoderHeld && !encoderLayerTriggered && !joyHeld && !cadMiddleActive && now - encoderPressedAt >= activeConfig.settings.layerHoldMs) {
     activeLayer = static_cast<uint8_t>((activeLayer + 1) % LayerCount);
     encoderLayerTriggered = true;
