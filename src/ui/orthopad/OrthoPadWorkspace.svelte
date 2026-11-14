@@ -1,4 +1,5 @@
 <script lang="ts">
+  import JoystickMonitor from './JoystickMonitor.svelte';
   import { KEYCODES_BY_CATEGORY, type KeycodeEntry } from '../../core/keycodes';
   import {
     actionLabel,
@@ -154,6 +155,7 @@
     </div>
   {/if}
 
+  <JoystickMonitor />
   {#if config}
     <section class="rounded-xl border border-surface-raised bg-surface-dark p-4 space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">

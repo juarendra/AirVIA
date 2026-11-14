@@ -4,7 +4,7 @@ Wireless keyboard configurator for VIA v13 over BLE. Load a V3 JSON definition, 
 
 ## OrthoPad CAD configurator
 
-AirVIA juga menyediakan konfigurator USB untuk OrthoPad berbasis Arduino Pro Micro / ATmega32U4. Buka tab **OrthoPad**, hubungkan lewat Web Serial, lalu atur keymap tiga layer, encoder, joystick CAD settings, dan simpan konfigurasi ke EEPROM firmware tanpa reflash.
+AirVIA juga menyediakan konfigurator USB untuk OrthoPad berbasis Arduino Pro Micro / ATmega32U4. Buka tab **OrthoPad**, hubungkan lewat Web Serial, lalu atur keymap tiga layer, encoder, joystick CAD settings, pantau posisi raw joystick secara live, dan simpan konfigurasi ke EEPROM firmware tanpa reflash.
 
 Firmware ada di `firmware/` dan dibangun dengan PlatformIO:
 

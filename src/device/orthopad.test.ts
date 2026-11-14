@@ -8,7 +8,7 @@ class FakeTransport {
       const encode = (value: string) => new Uint8Array([value.length, ...new TextEncoder().encode(value)]);
       return new Uint8Array([
         ...encode('OrthoPad'),
-        ...encode('0.1.0'),
+        ...encode('0.2.0'),
         1, 0, 1, 0, 3, 5, 1,
         0x1f, 0, 0, 0,
       ]);
@@ -16,6 +16,7 @@ class FakeTransport {
     if (command === OrthoPadCommand.GetKeymap) return new Uint8Array([5, 1, 0x29, 0, 0, 1, 0x16, 0, 0, 1, 0x10, 0, 0, 1, 8, 0, 0, 1, 0x14, 0, 0]);
     if (command === OrthoPadCommand.GetEncoder) return new Uint8Array([2, 1, 0, 0, 2, 0xff, 0xff, 0]);
     if (command === OrthoPadCommand.GetCadSettings) return new Uint8Array(23);
+    if (command === OrthoPadCommand.GetJoystickState) return new Uint8Array([0, 2, 224, 1, 0x20, 0x04, 1, 0]);
     return payload;
   }
 }
@@ -36,5 +37,16 @@ describe('OrthoPad configuration', () => {
     expect(snapshot.config.keymap).toHaveLength(3);
     expect(snapshot.config.encoders).toHaveLength(3);
     expect(snapshot.config.settings.centerX).toBe(0);
+  });
+
+  it('decodes live joystick telemetry', async () => {
+    const state = await new OrthoPadBackend(new FakeTransport()).getJoystickState();
+    expect(state).toEqual({
+      rawX: 512,
+      rawY: 480,
+      buttonMask: 0x20,
+      modeFlags: 0x04,
+      activeLayer: 1,
+    });
   });
 });

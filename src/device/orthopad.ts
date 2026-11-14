@@ -60,6 +60,14 @@ export type OrthoPadInfo = {
   capabilities: number;
 };
 
+export type OrthoPadJoystickState = {
+  rawX: number;
+  rawY: number;
+  buttonMask: number;
+  modeFlags: number;
+  activeLayer: number;
+};
+
 const ACTION_NONE = 0;
 const ACTION_KEY = 1;
 const ACTION_WHEEL = 2;
@@ -242,6 +250,19 @@ export class OrthoPadBackend {
 
   async getCadSettings(): Promise<OrthoPadCadSettings> {
     return decodeSettings(await this.transport.request(OrthoPadCommand.GetCadSettings));
+  }
+
+  async getJoystickState(): Promise<OrthoPadJoystickState> {
+    const data = await this.transport.request(OrthoPadCommand.GetJoystickState);
+    if (data.byteLength !== 8) throw new OrthoPadProtocolError('Invalid joystick state payload');
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    return {
+      rawX: view.getUint16(0, true),
+      rawY: view.getUint16(2, true),
+      buttonMask: data[4] ?? 0,
+      modeFlags: data[5] ?? 0,
+      activeLayer: data[6] ?? 0,
+    };
   }
 
   async setCadSettings(settings: OrthoPadCadSettings): Promise<void> {

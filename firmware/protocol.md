@@ -46,9 +46,23 @@ Response payload selalu diawali status satu byte. Data command berada setelah st
 | `0x31` Discard | kosong | kosong |
 | `0x32` ResetDefaults | `4F 50` | kosong |
 | `0x33` Verify | kosong | storage generation `u32` |
+| `0x40` GetJoystickState | kosong | raw X/Y, tombol, mode, layer |
 | `0x7F` Reboot | kosong | kosong, lalu reboot |
 
 Device layout saat ini tetap: 3 layer, 5 tombol, 1 encoder.
+
+## Joystick state encoding
+
+Response data `GetJoystickState` berukuran 8 byte:
+
+- `u16 rawX`
+- `u16 rawY`
+- `u8 buttonMask`: bit 0–4 BTN1–BTN5, bit 5 joystick switch, bit 6 encoder switch
+- `u8 modeFlags`: bit 0 joystick held, bit 1 orbit aktif, bit 2 pan aktif, bit 3 encoder switch held
+- `u8 activeLayer`
+- `u8 reserved`
+
+AirVIA melakukan polling 10 kali per detik saat koneksi aktif. Nilai ini dipakai untuk diagnosis center, deadzone, drift, tombol joystick, dan mode gesture; tidak mengubah konfigurasi.
 
 ## Action encoding
 

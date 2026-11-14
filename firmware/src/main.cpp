@@ -416,7 +416,7 @@ bool parseAction(const uint8_t* input, uint16_t& offset, uint16_t length, Action
 
 uint16_t makeInfo(uint8_t* output) {
   const char* name = "OrthoPad";
-  const char* firmware = "0.1.0";
+  const char* firmware = "0.2.0";
   uint16_t offset = 0;
   output[offset++] = strlen(name);
   memcpy(output + offset, name, strlen(name)); offset += strlen(name);
@@ -473,6 +473,26 @@ bool parseSettings(const uint8_t* input, uint16_t length) {
   s.panModifier = input[offset++];
   ++offset;
   return validConfig(stagingConfig);
+}
+
+uint16_t makeJoystickState(uint8_t* output) {
+  writeU16(output, static_cast<uint16_t>(analogRead(JoyX)));
+  writeU16(output + 2, static_cast<uint16_t>(analogRead(JoyY)));
+
+  uint8_t buttonMask = 0;
+  for (uint8_t i = 0; i < ButtonCount + 2; ++i) {
+    if (digitalRead(ButtonPins[i]) == LOW) buttonMask |= static_cast<uint8_t>(1u << i);
+  }
+  output[4] = buttonMask;
+  output[5] = static_cast<uint8_t>(
+    (joyHeld ? 0x01 : 0) |
+    (orbitActive ? 0x02 : 0) |
+    (panActive ? 0x04 : 0) |
+    (encoderHeld ? 0x08 : 0)
+  );
+  output[6] = activeLayer;
+  output[7] = 0;
+  return 8;
 }
 #endif
 
@@ -578,6 +598,11 @@ void handleCommand(uint8_t version, uint16_t sequence, uint8_t command, const ui
       activeConfig = stagingConfig;
       stagingDirty = false;
       sendResponse(sequence, command, Ok);
+      return;
+    case GetJoystickState:
+      if (length != 0) { sendResponse(sequence, command, InvalidLength); return; }
+      outputLength = makeJoystickState(output);
+      sendResponse(sequence, command, Ok, output, outputLength);
       return;
     case Verify:
       if (length != 0) { sendResponse(sequence, command, InvalidLength); return; }

@@ -23,6 +23,7 @@ enum Command : uint8_t {
   Discard = 0x31,
   ResetDefaults = 0x32,
   Verify = 0x33,
+  GetJoystickState = 0x40,
   Reboot = 0x7f,
 };
 

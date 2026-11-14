@@ -6,6 +6,7 @@ import type {
   OrthoPadEncoderAction,
   OrthoPadEncoderLayer,
   OrthoPadInfo,
+  OrthoPadJoystickState,
 } from '../device/orthopad';
 import type { SerialTransportState } from '../serial/transport';
 
@@ -13,6 +14,7 @@ let backend = $state<OrthoPadBackend | null>(null);
 let connectionState = $state<SerialTransportState>('disconnected');
 let info = $state<OrthoPadInfo | null>(null);
 let config = $state<OrthoPadConfig | null>(null);
+let joystickState = $state<OrthoPadJoystickState | null>(null);
 let activeLayer = $state(0);
 let dirty = $state(false);
 let busy = $state(false);
@@ -25,6 +27,8 @@ export function getOrthoPadConnectionState(): SerialTransportState { return conn
 export function setOrthoPadConnectionState(value: SerialTransportState): void { connectionState = value; }
 export function setOrthoPadError(value: string): void { error = value; }
 export function getOrthoPadInfo(): OrthoPadInfo | null { return info; }
+export function getOrthoPadJoystickState(): OrthoPadJoystickState | null { return joystickState; }
+export function setOrthoPadJoystickState(value: OrthoPadJoystickState | null): void { joystickState = value; }
 export function getOrthoPadConfig(): OrthoPadConfig | null { return config; }
 export function getOrthoPadActiveLayer(): number { return activeLayer; }
 export function setOrthoPadActiveLayer(value: number): void { activeLayer = Math.max(0, Math.min(2, value)); }
@@ -36,7 +40,7 @@ export function getOrthoPadError(): string { return error; }
 export function setOrthoPadSnapshot(nextInfo: OrthoPadInfo, nextConfig: OrthoPadConfig): void {
   info = nextInfo;
   config = nextConfig;
-  activeLayer = 0;
+  joystickState = null;
   dirty = false;
   message = 'Device synchronized';
   error = '';
@@ -47,7 +51,7 @@ export function clearOrthoPadState(): void {
   connectionState = 'disconnected';
   info = null;
   config = null;
-  activeLayer = 0;
+  joystickState = null;
   dirty = false;
   busy = false;
   message = '';
