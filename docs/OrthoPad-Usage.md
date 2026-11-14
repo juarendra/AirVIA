@@ -104,7 +104,9 @@ Monitor menampilkan:
 - Jarak joystick dari center.
 - Status `BTN1` sampai `BTN5`.
 - Status `JOY SW` dan `ENC SW`.
-- Mode `Idle`, `Joystick held`, `Orbit active`, atau `Pan active`.
+- Counter encoder kumulatif dan arah putaran terakhir.
+- Status switch encoder pada panel **Encoder tester**.
+- Logical `JOY_X` membaca pin fisik `A2`; logical `JOY_Y` membaca pin fisik `A1`.
 - Layer aktif.
 
 ### Pemeriksaan normal
@@ -131,8 +133,14 @@ Saat joystick switch ditahan:
 - Mode berubah menjadi `Orbit active`.
 
 Saat joystick dan encoder switch ditahan bersama:
-
 - Mode berubah menjadi `Pan active`.
+
+Saat encoder diputar:
+
+- Counter `steps` berubah.
+- Arah terakhir menampilkan `Clockwise` atau `Counter-clockwise`.
+- Switch encoder tetap diuji terpisah dari rotasi.
+
 
 ## 6. Kalibrasi joystick
 

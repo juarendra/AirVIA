@@ -1,7 +1,5 @@
 export type AppDestination = 'orthopad' | 'keymap' | 'encoder' | 'lighting' | 'macros' | 'profiles' | 'layout' | 'actions' | 'console' | 'manual';
-
 export type DestinationItem = { id: AppDestination; label: string; icon: string; title: string; description: string };
-
 const META: Record<AppDestination, Pick<DestinationItem, 'label' | 'icon' | 'title' | 'description'>> = {
   orthopad: { label: 'OrthoPad', icon: 'settings', title: 'OrthoPad CAD Configurator', description: 'Configure OrthoPad over USB' },
   keymap: { label: 'Keymap', icon: 'keyboard', title: 'Keymap Editor', description: 'Assign keycodes to each key on the matrix' },
@@ -16,10 +14,14 @@ const META: Record<AppDestination, Pick<DestinationItem, 'label' | 'icon' | 'tit
 };
 
 export const navigationGroups = [
-  { label: 'Configure', items: ['orthopad', 'keymap', 'encoder', 'lighting', 'macros'] },
-  { label: 'Workspace', items: ['profiles', 'layout'] },
-  { label: 'Advanced', items: ['actions', 'console'] },
-  { label: 'Help', items: ['manual'] },
+  {
+    label: 'Configure',
+    items: ['keymap', 'encoder', 'lighting', 'macros'],
+    children: [{ label: 'Special Macropad', items: ['orthopad'] }],
+  },
+  { label: 'Workspace', items: ['profiles', 'layout'], children: [] },
+  { label: 'Advanced', items: ['actions', 'console'], children: [] },
+  { label: 'Help', items: ['manual'], children: [] },
 ] as const;
 
 export function destinationById(id: AppDestination): DestinationItem | undefined {

@@ -6,8 +6,8 @@
 
   const active = $derived(getActiveTab());
 
+  let specialMacropadOpen = $state(true);
   let sheetOpen = $state(false);
-
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') {
       sheetOpen = false;
@@ -40,6 +40,36 @@
             <span class="truncate">{dest.label}</span>
           </button>
         {/if}
+      {/each}
+      {#each group.children ?? [] as parent}
+        <div class="mt-1">
+          <button
+            aria-expanded={specialMacropadOpen}
+            onclick={() => specialMacropadOpen = !specialMacropadOpen}
+            class="flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-text-dimmed hover:text-text-primary hover:bg-surface-elevated"
+          >
+            <span>{parent.label}</span>
+            <Icon name="chevron-right" class="h-3.5 w-3.5 transition-transform {specialMacropadOpen ? 'rotate-90' : ''}" />
+          </button>
+          {#if specialMacropadOpen}
+            {#each parent.items as itemId}
+              {@const dest = destinationById(itemId)}
+              {#if dest}
+                <button
+                  aria-current={active === dest.id ? 'page' : undefined}
+                  onclick={() => setActiveTab(dest.id)}
+                  class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 pl-9 text-sm transition-colors text-left
+                         {active === dest.id
+                           ? 'bg-accent-cyan/10 text-accent-cyan shadow-[inset_0_0_0_1px_var(--color-accent-violet)]'
+                           : 'text-text-muted hover:text-text-primary hover:bg-surface-elevated'}"
+                >
+                  <Icon name={dest.icon} class="h-4 w-4 shrink-0" />
+                  <span class="truncate">{dest.label}</span>
+                </button>
+              {/if}
+            {/each}
+          {/if}
+        </div>
       {/each}
     </div>
   {/each}

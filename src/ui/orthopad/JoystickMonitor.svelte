@@ -16,6 +16,7 @@
   const backend = $derived(getOrthoPadBackend());
   const config = $derived(getOrthoPadConfig());
   const sample = $derived(getOrthoPadJoystickState());
+  const encoderSteps = $derived(sample?.encoderSteps ?? 0);
   const rawX = $derived(sample?.rawX ?? 512);
   const rawY = $derived(sample?.rawY ?? 512);
   const centerX = $derived(config?.settings.centerX ?? 512);
@@ -27,8 +28,9 @@
   const offset = $derived(Math.hypot(rawX - centerX, rawY - centerY));
   const centered = $derived(offset <= deadzone);
 
+  let encoderEvent = $state('No movement yet');
+  let lastEncoderSteps: number | null = null;
   let monitorError = $state('');
-
   $effect(() => {
     const currentState = connectionState;
     const currentBackend = backend;
@@ -54,6 +56,18 @@
     return () => { stopped = true; };
   });
 
+  $effect(() => {
+    const current = encoderSteps;
+    if (lastEncoderSteps === null) {
+      lastEncoderSteps = current;
+      return;
+    }
+    const delta = counterDelta(current, lastEncoderSteps);
+    if (delta > 0) encoderEvent = `Clockwise +${delta}`;
+    if (delta < 0) encoderEvent = `Counter-clockwise ${delta}`;
+    lastEncoderSteps = current;
+  });
+
   function axisPosition(value: number, center: number): number {
     return Math.max(CENTER - RADIUS, Math.min(CENTER + RADIUS, CENTER + ((value - center) / 512) * RADIUS));
   }
@@ -76,6 +90,12 @@
 
   function layerLabel(value: number): string {
     return ['Core', 'Sketch', 'Modify'][value] ?? `Layer ${value + 1}`;
+  }
+  function counterDelta(current: number, previous: number): number {
+    let delta = current - previous;
+    if (delta > 0x7fffffff) delta -= 0x100000000;
+    if (delta < -0x7fffffff) delta += 0x100000000;
+    return delta;
   }
 </script>
 
@@ -156,6 +176,25 @@
           <div class="flex items-center gap-2 rounded-lg border border-surface-raised px-2 py-2 text-xs">
             <span class="h-2 w-2 rounded-full {pressed(6) ? 'bg-accent-lime' : 'bg-text-dimmed'}"></span>
             <span class="text-text-muted">ENC SW</span>
+          </div>
+        </div>
+        <div class="rounded-lg border border-surface-raised p-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-text-dimmed">Encoder tester</span>
+            <span class="font-mono text-text-primary">{encoderSteps} steps</span>
+          </div>
+          <div class="mt-2 grid grid-cols-2 gap-2">
+            <div class="rounded-md bg-bg-dark px-3 py-2">
+              <div class="text-[0.65rem] text-text-dimmed">Last rotation</div>
+              <div class="mt-1 text-sm text-accent-cyan">{encoderEvent}</div>
+            </div>
+            <div class="rounded-md bg-bg-dark px-3 py-2">
+              <div class="text-[0.65rem] text-text-dimmed">Encoder switch</div>
+              <div class="mt-1 flex items-center gap-2 text-sm text-text-primary">
+                <span class="h-2 w-2 rounded-full {pressed(6) ? 'bg-accent-lime' : 'bg-text-dimmed'}"></span>
+                {pressed(6) ? 'Pressed' : 'Released'}
+              </div>
+            </div>
           </div>
         </div>
       </div>

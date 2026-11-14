@@ -66,6 +66,7 @@ export type OrthoPadJoystickState = {
   buttonMask: number;
   modeFlags: number;
   activeLayer: number;
+  encoderSteps: number;
 };
 
 const ACTION_NONE = 0;
@@ -254,7 +255,7 @@ export class OrthoPadBackend {
 
   async getJoystickState(): Promise<OrthoPadJoystickState> {
     const data = await this.transport.request(OrthoPadCommand.GetJoystickState);
-    if (data.byteLength !== 8) throw new OrthoPadProtocolError('Invalid joystick state payload');
+    if (data.byteLength !== 12) throw new OrthoPadProtocolError('Invalid joystick state payload');
     const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
     return {
       rawX: view.getUint16(0, true),
@@ -262,6 +263,7 @@ export class OrthoPadBackend {
       buttonMask: data[4] ?? 0,
       modeFlags: data[5] ?? 0,
       activeLayer: data[6] ?? 0,
+      encoderSteps: view.getInt32(8, true),
     };
   }
 

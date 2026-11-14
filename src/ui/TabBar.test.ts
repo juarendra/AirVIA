@@ -36,6 +36,13 @@ describe('TabBar', () => {
     expect(buttons.length).toBe(5);
   });
 
+  it('renders Special Macropad with OrthoPad child', () => {
+    const { container } = render(TabBar);
+    const desktopNav = container.querySelector('[aria-label="Main navigation"]')!;
+    expect(desktopNav.textContent).toContain('Special Macropad');
+    expect(desktopNav.textContent).toContain('OrthoPad');
+  });
+
   it('opens Advanced sheet', async () => {
     const { container } = render(TabBar);
     const moreBtn = container.querySelector('[aria-label="Primary navigation"] button:last-child')!;

@@ -48,6 +48,7 @@ bool encoderHeld = false;
 uint32_t encoderPressedAt = 0;
 bool encoderLayerTriggered = false;
 int8_t encoderQuarter = 0;
+int32_t encoderStepCount = 0;
 uint8_t previousEncoderState = 0;
 uint32_t lastJoystickAt = 0;
 uint32_t lastDiagnosticAt = 0;
@@ -352,7 +353,7 @@ void processEncoder(uint32_t now) {
   encoderQuarter += table[transition];
   if (encoderQuarter >= 4 || encoderQuarter <= -4) {
     const int8_t direction = encoderQuarter > 0 ? 1 : -1;
-    encoderQuarter = 0;
+    encoderStepCount += direction;
     const Action& action = direction * activeConfig.settings.encoderDirection > 0
       ? activeConfig.encoders[activeLayer][0]
       : activeConfig.encoders[activeLayer][1];
@@ -389,8 +390,8 @@ void processJoystick(uint32_t now) {
 #endif
   if (now - lastJoystickAt < 5000) return;
   lastJoystickAt = now;
-  const uint16_t x = analogRead(JoyX);
-  const uint16_t y = analogRead(JoyY);
+  const uint16_t x = analogRead(JoyY);
+  const uint16_t y = analogRead(JoyX);
   const int8_t dx = axisDelta(x, activeConfig.settings.centerX, activeConfig.settings.invertX);
   const int8_t dy = axisDelta(y, activeConfig.settings.centerY, activeConfig.settings.invertY);
   if (dx != 0 || dy != 0) Mouse.move(dx, dy, 0);
@@ -416,7 +417,7 @@ bool parseAction(const uint8_t* input, uint16_t& offset, uint16_t length, Action
 
 uint16_t makeInfo(uint8_t* output) {
   const char* name = "OrthoPad";
-  const char* firmware = "0.2.0";
+  const char* firmware = "0.3.0";
   uint16_t offset = 0;
   output[offset++] = strlen(name);
   memcpy(output + offset, name, strlen(name)); offset += strlen(name);
@@ -476,8 +477,8 @@ bool parseSettings(const uint8_t* input, uint16_t length) {
 }
 
 uint16_t makeJoystickState(uint8_t* output) {
-  writeU16(output, static_cast<uint16_t>(analogRead(JoyX)));
-  writeU16(output + 2, static_cast<uint16_t>(analogRead(JoyY)));
+  writeU16(output, static_cast<uint16_t>(analogRead(JoyY)));
+  writeU16(output + 2, static_cast<uint16_t>(analogRead(JoyX)));
 
   uint8_t buttonMask = 0;
   for (uint8_t i = 0; i < ButtonCount + 2; ++i) {
@@ -492,7 +493,8 @@ uint16_t makeJoystickState(uint8_t* output) {
   );
   output[6] = activeLayer;
   output[7] = 0;
-  return 8;
+  writeU32(output + 8, static_cast<uint32_t>(encoderStepCount));
+  return 12;
 }
 #endif
 
@@ -666,8 +668,8 @@ void diagnosticOutput(uint32_t now) {
 #if defined(ORTHOPAD_DIAGNOSTIC)
   if (now - lastDiagnosticAt < 100) return;
   lastDiagnosticAt = now;
-  Serial.print("JOY_X="); Serial.print(analogRead(JoyX));
-  Serial.print(" JOY_Y="); Serial.print(analogRead(JoyY));
+  Serial.print("JOY_X="); Serial.print(analogRead(JoyY));
+  Serial.print(" JOY_Y="); Serial.print(analogRead(JoyX));
   Serial.print(" JOY_SW="); Serial.print(digitalRead(JoySwitch));
   Serial.print(" ENC_A="); Serial.print(digitalRead(EncoderA));
   Serial.print(" ENC_B="); Serial.print(digitalRead(EncoderB));
