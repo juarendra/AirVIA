@@ -36,7 +36,7 @@ describe('OrthoPad configuration', () => {
     expect(config.keymap).toHaveLength(3);
     expect(config.keymap.every(layer => layer.length === 5)).toBe(true);
     expect(config.encoders).toHaveLength(1);
-    expect(config.settings.deadzone).toBe(100);
+    expect(config.settings.deadzone).toBe(30);
   });
 
   it('syncs info, keymap, encoder, and settings', async () => {

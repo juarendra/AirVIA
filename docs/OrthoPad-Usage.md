@@ -161,7 +161,8 @@ Deadzone mengabaikan perubahan kecil di sekitar center.
 
 - Naikkan jika titik bergerak sendiri saat joystick dilepas.
 - Turunkan jika gerakan kecil tidak terdeteksi.
-- Mulai dari `100`, lalu ubah bertahap.
+- Default firmware sekarang `30`; ubah bertahap sesuai noise joystick.
+Konfigurasi EEPROM lama tidak otomatis berubah; pilih **Restore defaults** atau isi `30` lalu klik **Apply & Save**.
 
 ### Speed dan curve
 

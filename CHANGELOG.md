@@ -8,6 +8,7 @@
 - Encoder tester telemetry and firmware logical joystick axis swap.
 - Joystick monitor polling raised to 20 Hz with client-side position interpolation.
 - Legacy 8-byte telemetry compatibility so joystick monitor remains usable before firmware `0.3.0`.
+- Default joystick deadzone lowered to `30` in firmware and AirVIA defaults.
 ### Verification
 - `svelte-check`, `tsc --noEmit`, and Vitest: 24 files, 204 tests passed.
 - PlatformIO `promicro5v` and `diagnostic`: both build successfully with axis swap and encoder telemetry.
