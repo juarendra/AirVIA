@@ -21,6 +21,7 @@
 - Joystick speed/curve defaults reduced again to `Speed=50`, `Curve=500` after Fusion validation.
 - Joystick polling raised to 50 Hz and speed reduced to `8` for finer Fusion movement steps.
 - AirVIA monitor now polls at 50 Hz and displays recommended joystick tuning in CAD settings.
+- Joystick Calibration Wizard estimates center, noise, range, deadzone, and invert flags without emitting HID.
 ### Verification
 - `svelte-check`, `tsc --noEmit`, and Vitest: 24 files, 205 tests passed.
 - Firmware encoder regression logic check passed; native test execution requires a local GCC toolchain.

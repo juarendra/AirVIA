@@ -116,6 +116,22 @@ Monitor menampilkan:
 
 Dot monitor mengikuti arah output efektif setelah Invert X/Y. Kartu raw X/Y tetap menunjukkan ADC asli agar diagnosis sensor tidak tertukar dengan arah HID.
 
+### Calibration Wizard
+
+Gunakan **Start calibration** pada panel Joystick Monitor jika center joystick
+bergeser atau deadzone belum sesuai.
+
+1. Lepaskan joystick dan biarkan tetap di tengah sampai `Center capture` selesai.
+2. Gerakkan joystick perlahan melewati kiri, kanan, atas, dan bawah sampai `Range capture` selesai.
+3. Tinjau center, noise, range, dan deadzone yang disarankan.
+4. Aktifkan `Invert X/Y` jika arah fisik terbalik.
+5. Klik **Use calibration** untuk memasukkan hasil ke draft.
+6. Klik **Apply & Save** pada CAD settings untuk menulis EEPROM.
+
+Calibration tidak menggerakkan cursor karena Joystick Monitor mengaktifkan
+test mode. Jika range axis terlalu sempit, periksa kabel VCC, GND, dan wiper
+joystick sebelum menerapkan hasil.
+
 ### Pemeriksaan normal
 
 Saat joystick dilepas:

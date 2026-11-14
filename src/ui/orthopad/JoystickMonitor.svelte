@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { OrthoPadJoystickState } from '../../device/orthopad';
+  import JoystickCalibration from './JoystickCalibration.svelte';
   import {
     getOrthoPadBackend,
     getOrthoPadConfig,
@@ -41,6 +42,7 @@
   let encoderEvent = $state('No movement yet');
   let lastEncoderSteps: number | null = null;
   let monitorError = $state('');
+  let sampleSequence = $state(0);
   $effect(() => {
     const currentState = connectionState;
     const currentBackend = backend;
@@ -64,7 +66,7 @@
           const next = await currentBackend.getJoystickState();
           if (!stopped) {
             setOrthoPadJoystickState(next);
-            monitorError = '';
+            sampleSequence += 1;
           }
         } catch (reason) {
           if (!stopped) monitorError = reason instanceof Error ? reason.message : 'Joystick telemetry failed';
@@ -258,3 +260,9 @@
     <p class="text-xs text-accent-amber">Telemetry: {monitorError}</p>
   {/if}
 </section>
+
+<JoystickCalibration
+  connected={connectionState === 'connected'}
+  sample={sample}
+  sampleSequence={sampleSequence}
+/>
