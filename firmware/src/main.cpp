@@ -9,6 +9,7 @@
 #include "board_pins.h"
 #include "config_types.h"
 #include "protocol.h"
+#include "encoder_logic.h"
 
 using namespace OrthoPadConfig;
 using namespace OrthoPadPins;
@@ -353,15 +354,13 @@ void processEncoder(uint32_t now) {
   const uint8_t transition = static_cast<uint8_t>((previousEncoderState << 2) | current);
   previousEncoderState = current;
   static const int8_t table[16] = {0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0};
-  encoderQuarter += table[transition];
-  if (encoderQuarter >= 4 || encoderQuarter <= -4) {
-    const int8_t direction = encoderQuarter > 0 ? 1 : -1;
-    encoderStepCount += direction;
-    const Action& action = direction * activeConfig.settings.encoderDirection > 0
-      ? activeConfig.encoders[activeLayer][0]
-      : activeConfig.encoders[activeLayer][1];
-    tapAction(action);
-  }
+  const int8_t direction = consumeEncoderQuarter(encoderQuarter, table[transition]);
+  if (direction == 0) return;
+  encoderStepCount += direction;
+  const Action& action = direction * activeConfig.settings.encoderDirection > 0
+    ? activeConfig.encoders[activeLayer][0]
+    : activeConfig.encoders[activeLayer][1];
+  tapAction(action);
 }
 
 int8_t axisDelta(uint16_t value, uint16_t center, bool invert) {

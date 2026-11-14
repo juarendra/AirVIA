@@ -9,10 +9,11 @@
 - Joystick monitor polling raised to 20 Hz with client-side position interpolation.
 - Legacy 8-byte telemetry compatibility so joystick monitor remains usable before firmware `0.3.0`.
 - Invert X/Y is now reflected by the effective-position dot while raw ADC remains visible.
+- Encoder detent accumulator reset prevents repeated wheel reports after rotation stops; native regression coverage is in `firmware/test/test_encoder_logic/`.
 - Joystick monitor test mode suppresses HID side effects while testing encoder and switches.
 ### Verification
 - `svelte-check`, `tsc --noEmit`, and Vitest: 24 files, 205 tests passed.
-- PlatformIO `promicro5v` and `diagnostic`: both build successfully with axis swap and encoder telemetry.
+- Firmware encoder regression logic check passed; native test execution requires a local GCC toolchain.
 ### Impact and rollback
 - Adds a separate OrthoPad USB flow; existing BLE/VIA flow remains available.
 - Roll back by reverting the Unreleased changes and removing the OrthoPad files listed above.
